@@ -1,14 +1,10 @@
 add_library( llvmsc
-    ${CMAKE_CURRENT_SOURCE_DIR}/init.cpp
+    init.cpp
 )
 
-option( BUILD_SHARED_LIBS "Build shared library" ON )
-
-include( GenerateExportHeader )
-
-generate_export_header( llvmsc
-    EXPORT_MACRO_NAME LLVMSC_API
-    EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/include/sc/init.hpp
+target_include_directories( llvmsc
+  PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 # Options
@@ -46,15 +42,6 @@ target_compile_options( llvmsc PRIVATE
         $<$<CONFIG:Debug>:/Od /Wall /Zi>>
 )
 
-target_include_directories( llvmsc
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 find_package( LLVM REQUIRED CONFIG )
 
 message( STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}" )
@@ -66,36 +53,3 @@ add_definitions( ${LLVM_DEFINITIONS} )
 llvm_map_components_to_libnames( llvm support core irreader )
 
 target_link_libraries( llvmsc ${llvm} )
-
-set_target_properties( llvmsc PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-include( GNUInstallDirs )
-set( INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/llvmsc )
-
-install( TARGETS llvmsc
-    EXPORT llvmsc-targets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${EMBREE_INCLUDE_DIRS}
-)
-
-install( DIRECTORY ${CMAKE_SOURCE_DIR}/include/llvmsc
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-install(DIRECTORY ${CMAKE_BINARY_DIR}/include/llvmsc
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-install( EXPORT llvmsc-targets
-    FILE llvmsc-targets.cmake
-    NAMESPACE llvmsc::
-    DESTINATION ${INSTALL_CONFIGDIR}
-)
-
-include( CMakePackageConfigHelpers )
