@@ -16,5 +16,16 @@
 
 #pragma once
 
+#include <llvm/IR/LLVMContext.h>
+
 namespace sc
-{} // namespace sc
+{
+    using context_t   = llvm::LLVMContext;
+    using context_ref = context_t &;
+    using context_ptr = context_t *;
+
+    void init( context_ref ctx );
+
+    context_ref context();
+
+} // namespace sc

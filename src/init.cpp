@@ -14,5 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sc/init.hpp>
 namespace sc
-{}
+{
+    context_ptr _context = nullptr;
+
+    void init( context_ref ctx )
+    {
+        _context = &ctx;
+    }
+
+    context_ref context()
+    {
+        assert( _context );
+        return *_context;
+    }
+
+} // namespace sc

@@ -5,8 +5,10 @@ add_executable( tests )
 target_sources( tests
     PRIVATE
     src/main.cpp
-    src/expr.cpp
+    src/init.cpp
 )
+
+target_link_libraries( tests llvmsc )
 
 target_include_directories( tests
     PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
