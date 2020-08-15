@@ -25,5 +25,8 @@ target_compile_options(
             $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-pedantic>
 )
 
+# add `-DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE to switch to runtime only checks
+# target_compile_definitions(SI_detail_tests PRIVATE
+# CATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
+
 add_test( NAME tests COMMAND tests )
-© 2020 GitHub, Inc.
