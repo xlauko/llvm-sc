@@ -16,8 +16,10 @@
 
 #pragma once
 
-#include <llvm/IR/LLVMContext.h>
+#include "ir.hpp"
 
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
 namespace sc
 {
     using context_t   = llvm::LLVMContext;
@@ -27,5 +29,18 @@ namespace sc
     void init( context_ref ctx );
 
     context_ref context();
+
+    struct with_context
+    {
+        explicit with_context( module_ref m )
+        {
+            init( m.getContext() );
+        }
+
+        explicit with_context( context_ref ctx )
+        {
+            init( ctx );
+        }
+    };
 
 } // namespace sc
