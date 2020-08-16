@@ -17,11 +17,12 @@
 #include <sc/init.hpp>
 namespace sc
 {
-    extern context_ptr _context;
+    context_ptr _context = nullptr;
 
-    void init( context_ref ctx )
+    context_ref context()
     {
-        _context = &ctx;
+        assert( _context );
+        return *_context;
     }
 
 } // namespace sc

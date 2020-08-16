@@ -14,14 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sc/init.hpp>
+#pragma once
+
+#include <llvm/IR/LLVMContext.h>
+
 namespace sc
 {
-    extern context_ptr _context;
+    using context_t   = llvm::LLVMContext;
+    using context_ref = context_t &;
+    using context_ptr = context_t *;
 
-    void init( context_ref ctx )
-    {
-        _context = &ctx;
-    }
+    context_ref context();
 
 } // namespace sc
