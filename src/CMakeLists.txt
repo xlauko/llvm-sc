@@ -7,6 +7,8 @@ target_include_directories( llvmsc
     ${PROJECT_SOURCE_DIR}/include
 )
 
+set_property( TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON )
+
 # Options
 option( ENABLE_SANITIZE "compile with sanitizers enabled" OFF )
 option( ENABLE_COVERAGE "compile with test coverage support" OFF )
