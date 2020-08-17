@@ -16,14 +16,18 @@
 
 #pragma once
 
-#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Metadata.h>
+#include <optional>
 
-namespace sc
+namespace sc::meta
 {
-    using context_t   = llvm::LLVMContext;
-    using context_ref = context_t &;
+    using node = llvm::MDNode *;
 
-    context_ref context();
-    context_t* context_ptr();
+    using meta_str       = llvm::StringRef;
+    using maybe_meta_str = std::optional< meta_str >;
 
-} // namespace sc
+    node create( meta_str str );
+
+    maybe_meta_str get_string( node n );
+
+} // namespace sc::meta

@@ -14,16 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include <sc/context.hpp>
+#include <sc/meta.hpp>
 
-#include <llvm/IR/LLVMContext.h>
-
-namespace sc
+namespace sc::meta
 {
-    using context_t   = llvm::LLVMContext;
-    using context_ref = context_t &;
+    node create( meta_str str )
+    {
+        auto &ctx = context();
+        return llvm::MDNode::get( ctx, llvm::MDString::get( ctx, str ) );
+    }
 
-    context_ref context();
-    context_t* context_ptr();
+    maybe_meta_str get_string( node n )
+    {
+        if ( !n || !n->getNumOperands() ) return std::nullopt;
 
-} // namespace sc
+        const auto& str = n->getOperand( 0 );
+        auto res  = llvm::cast< llvm::MDString >( str )->getString().str();
+        if ( res.empty() ) return std::nullopt;
+        return res;
+    }
+
+} // namespace sc::meta

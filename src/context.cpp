@@ -15,14 +15,20 @@
  */
 
 #include <sc/init.hpp>
+
 namespace sc
 {
-    context_ptr _context = nullptr;
+    context_t* _context = nullptr;
 
     context_ref context()
     {
         assert( _context );
         return *_context;
+    }
+
+    context_t* context_ptr()
+    {
+        return _context;
     }
 
 } // namespace sc

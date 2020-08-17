@@ -6,5 +6,5 @@ TEST_CASE( "init" )
 {
     sc::context_t ctx;
     sc::init( ctx );
-    REQUIRE( sc::context() == ctx );
+    REQUIRE( &sc::context() == &ctx );
 }

@@ -17,7 +17,7 @@
 #include <sc/init.hpp>
 namespace sc
 {
-    extern context_ptr _context;
+    extern context_t * _context;
 
     void init( context_ref ctx )
     {
