@@ -6,6 +6,7 @@ target_sources( tests
     PRIVATE
     src/main.cpp
     src/init.cpp
+    src/meta.cpp
 )
 
 target_link_libraries( tests llvmsc )
