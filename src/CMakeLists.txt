@@ -2,6 +2,7 @@ add_library( llvmsc
     init.cpp
     context.cpp
     meta.cpp
+    types.cpp
 )
 
 target_include_directories( llvmsc

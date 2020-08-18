@@ -16,26 +16,31 @@
 
 #pragma once
 
-#include "context.hpp"
-#include "ir.hpp"
-
-#include <llvm/IR/Module.h>
+#include <llvm/IR/Type.h>
 
 namespace sc
 {
-    void init( context_ref ctx );
+    using type     = llvm::Type *;
+    using int_type = llvm::IntegerType *;
+    using ptr_type = llvm::PointerType *;
 
-    struct with_context
-    {
-        explicit with_context( module_ref m )
-        {
-            init( m.getContext() );
-        }
+    type void_t();
 
-        explicit with_context( context_ref ctx )
-        {
-            init( ctx );
-        }
-    };
+    int_type ii( unsigned n );
+
+    int_type i1();
+    int_type i8();
+    int_type i16();
+    int_type i32();
+    int_type i64();
+    int_type i128();
+
+    ptr_type iip( unsigned n, unsigned as = 0 );
+
+    ptr_type i1p  ( unsigned as = 0 );
+    ptr_type i8p  ( unsigned as = 0 );
+    ptr_type i16p ( unsigned as = 0 );
+    ptr_type i32p ( unsigned as = 0 );
+    ptr_type i64p ( unsigned as = 0 );
 
 } // namespace sc
