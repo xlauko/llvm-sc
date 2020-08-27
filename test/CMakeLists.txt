@@ -7,6 +7,7 @@ target_sources( sctests
     src/main.cpp
     src/init.cpp
     src/meta.cpp
+    src/constant.cpp
     src/annotation.cpp
     src/transformer.cpp
 )
