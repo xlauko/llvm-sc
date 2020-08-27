@@ -24,4 +24,6 @@ namespace sc
     constant_int* i16( uint16_t v ) { return constant_int::get( i16(), v ); }
     constant_int* i32( uint32_t v ) { return constant_int::get( i32(), v ); }
     constant_int* i64( uint64_t v ) { return constant_int::get( i64(), v ); }
+
+    const apint& value( constant_int * c ) { return c->getValue(); }
 } // namespace sc
