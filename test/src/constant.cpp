@@ -12,8 +12,6 @@ TEST_CASE( "constant" )
     {
         using namespace sc::literals;
 
-        auto a = 10_i;
-        auto b = sc::i32(10);
-        REQUIRE( sc::value( a ) == sc::value( b ) );
+        REQUIRE( sc::value( 10_i32 ) == sc::value( sc::i32( 10 ) ) );
     }
 }
