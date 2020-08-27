@@ -1,4 +1,5 @@
 add_library( llvmsc
+    constant.cpp
     init.cpp
     context.cpp
     meta.cpp
