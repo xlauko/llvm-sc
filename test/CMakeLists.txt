@@ -7,7 +7,18 @@ target_sources( sctests
     src/main.cpp
     src/init.cpp
     src/meta.cpp
+    src/annotation.cpp
+    src/transformer.cpp
 )
+
+set_target_properties( sctests
+    PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+)
+
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines" )
 
 target_link_libraries( sctests llvmsc )
 
