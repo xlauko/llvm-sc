@@ -1,25 +1,25 @@
 include( CTest )
 
-add_executable( tests )
+add_executable( sctests )
 
-target_sources( tests
+target_sources( sctests
     PRIVATE
     src/main.cpp
     src/init.cpp
     src/meta.cpp
 )
 
-target_link_libraries( tests llvmsc )
+target_link_libraries( sctests llvmsc )
 
-target_include_directories( tests
+target_include_directories( sctests
     PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 )
 
-target_compile_features( tests PRIVATE cxx_std_17 )
+target_compile_features( sctests PRIVATE cxx_std_20 )
 
 target_compile_options(
-    tests
+    sctests
     PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
             $<$<CXX_COMPILER_ID:MSVC>:/W4>
             $<$<CXX_COMPILER_ID:MSVC>:/WX>
@@ -32,4 +32,4 @@ target_compile_options(
 # target_compile_definitions(SI_detail_tests PRIVATE
 # CATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
 
-add_test( NAME tests COMMAND tests )
+add_test( NAME sctests COMMAND sctests )
