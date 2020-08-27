@@ -26,4 +26,6 @@ namespace sc
     using module_t   = llvm::Module;
     using module_ref = llvm::Module &;
     using module_ptr = llvm::Module *;
+
+    using instruction = llvm::Instruction;
 } // namespace sc

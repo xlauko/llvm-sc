@@ -39,7 +39,8 @@ namespace sc
         template< typename F > constexpr decltype( auto ) apply( F f ) noexcept
         {
             using R = decltype( f( state ) );
-            if ( state ) return LLVMTransformer< R >( f( state ) );
+            if ( state )
+                return LLVMTransformer< R >( f( state ) );
             return LLVMTransformer< R >( nullptr );
         }
 
@@ -48,7 +49,9 @@ namespace sc
             constexpr auto detected = std::experimental::is_detected_v<
                 get_operand_t, std::remove_pointer_t< Value > >;
             if constexpr ( detected ) {
-                return apply( [ idx ]( const auto &v ) { return v->getOperand( idx ); } );
+                return apply( [ idx ]( const auto &v ) {
+                    return v->getOperand( idx );
+                } );
             } else {
                 return LLVMTransformer< value_type >( nullptr );
             }
@@ -56,7 +59,9 @@ namespace sc
 
         template< typename T > constexpr decltype( auto ) cast() noexcept
         {
-            return apply( [] ( const auto &v ) { return llvm::dyn_cast< T >( v ); } );
+            return apply( [] ( const auto &v ) {
+                return llvm::dyn_cast< T >( v );
+            } );
         }
 
         constexpr value_type freeze() noexcept

@@ -16,8 +16,9 @@ TEST_CASE( "transformer" )
 
     SECTION( "operand" )
     {
-        auto a = b.add( i8( 10 ), i8( 5 ) );
-        auto lhs = sc::transformer( a ).operand( 0 ).freeze();
-        REQUIRE( llvm::isa< sc::constant_int >( lhs ) );
+        using namespace sc::literals;
+
+        auto i = b.add( 10_i8, 5_i8 );
+        REQUIRE( llvm::isa< sc::instruction >( i ) );
     }
 }
