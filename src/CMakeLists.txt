@@ -4,6 +4,14 @@ add_library( llvmsc
     context.cpp
     meta.cpp
     types.cpp
+
+)
+
+set_target_properties( llvmsc
+    PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
 )
 
 target_include_directories( llvmsc
@@ -18,8 +26,7 @@ option( ENABLE_SANITIZE "compile with sanitizers enabled" OFF )
 option( ENABLE_COVERAGE "compile with test coverage support" OFF )
 option( DISABLE_WERROR "disable --werror" OFF )
 
-set( CMAKE_CXX_STANDARD 17 )
-set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines" )
 
 if ( ENABLE_SANITIZE )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=leak -fsanitize=undefined" )
