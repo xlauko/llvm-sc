@@ -1,7 +1,8 @@
 add_library( llvmsc
+    annotation.cpp
     constant.cpp
-    init.cpp
     context.cpp
+    init.cpp
     meta.cpp
     types.cpp
 
@@ -18,8 +19,6 @@ target_include_directories( llvmsc
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
 )
-
-set_property( TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON )
 
 # Options
 option( ENABLE_SANITIZE "compile with sanitizers enabled" OFF )
