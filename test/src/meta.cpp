@@ -9,8 +9,9 @@ TEST_CASE( "meta" )
 
     REQUIRE( sc::context_ptr() != nullptr );
 
-    SECTION( "create" ) {
-        auto *n = sc::meta::create( "info" );
+    SECTION( "create" )
+    {
+        auto *n = sc::meta::node( "info" );
         REQUIRE( sc::meta::get_string( n ) );
     }
 }

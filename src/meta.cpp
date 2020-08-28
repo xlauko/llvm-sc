@@ -14,25 +14,56 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <llvm/IR/Argument.h>
+#include <llvm/IR/Function.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/Instruction.h>
+#include <sc/case.hpp>
 #include <sc/context.hpp>
 #include <sc/meta.hpp>
 
 namespace sc::meta
 {
-    node create( meta_str str )
+    namespace detail
+    {
+        void arg_set( llvm::Argument *, meta_str ) {}
+
+        template< typename T > void set( T *val, tag_t tag, meta_str meta )
+        {
+            if constexpr ( std::is_same_v< T, llvm::Argument > )
+                // FIXME allow multiple tags
+                arg_set( val, meta );
+            else
+                val->setMetadata( tag, tuple::create( node( meta ) ) );
+        }
+
+    } // namespace detail
+
+    node_t node( meta_str str )
     {
         auto &ctx = context();
         return llvm::MDNode::get( ctx, llvm::MDString::get( ctx, str ) );
     }
 
-    maybe_meta_str get_string( node n )
+    maybe_meta_str get_string( node_t n )
     {
         if ( !n || !n->getNumOperands() ) return std::nullopt;
 
-        const auto& str = n->getOperand( 0 );
-        auto res  = llvm::cast< llvm::MDString >( str )->getString().str();
+        const auto &str = n->getOperand( 0 );
+        auto res        = llvm::cast< llvm::MDString >( str )->getString().str();
         if ( res.empty() ) return std::nullopt;
         return res;
+    }
+
+    void set( llvm::Value *v, tag_t t, meta_str m )
+    {
+        sc::llvmcase(
+            v,
+            [ & ]( llvm::Argument *a ) { detail::set( a, t, m ); },
+            [ & ]( llvm::Instruction *i ) { detail::set( i, t, m ); },
+            [ & ]( llvm::GlobalVariable *g ) { detail::set( g, t, m ); },
+            [ & ]( llvm::Function *f ) { detail::set( f, t, m ); },
+            [ & ]( llvm::Value * ) { __builtin_unreachable(); } );
     }
 
 } // namespace sc::meta

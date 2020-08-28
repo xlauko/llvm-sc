@@ -16,32 +16,14 @@
 
 #pragma once
 
-#include <llvm/IR/Metadata.h>
-#include <optional>
+#include <sc/context.hpp>
 
 namespace sc::meta
 {
-    using node_t = llvm::MDNode *;
-
-    using meta_str       = llvm::StringRef;
-    using maybe_meta_str = std::optional< meta_str >;
-
-    using tag_t = llvm::StringRef;
-
-    node_t node( meta_str str );
-
-    maybe_meta_str get_string( node_t n );
-
-    void set( llvm::Value *val, tag_t tag );
-    void set( llvm::Value *val, tag_t tag, meta_str meta );
-
-    struct tuple
+    llvm::MDTuple *tuple::create( const meta_array &arr )
     {
-        using meta_array = llvm::ArrayRef< llvm::Metadata * >;
-
-        static inline llvm::MDTuple *create( const meta_array &arr );
-    };
+        assert( !arr.empty() );
+        return llvm::MDTuple::getDistinct( sc::context(), arr );
+    }
 
 } // namespace sc::meta
-
-#include <sc/meta.tpp>
