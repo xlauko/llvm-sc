@@ -31,4 +31,26 @@ namespace sc
         };
         return std::accumulate( _parts.begin(), _parts.end(), std::string(), delim );
     }
+
+    size_t annotation::size() const
+    {
+        return _parts.size();
+    }
+
+    std::string_view annotation::name() const
+    {
+        return _parts.back();
+    }
+
+    annotation annotation::get_namespace() const
+    {
+        return { _parts.begin(), std::prev( _parts.end() ) };
+    }
+
+    bool annotation::in_namespace( const annotation &ns ) const
+    {
+        return ns.size() < size()
+               && std::equal( ns._parts.begin(), ns._parts.end(), _parts.begin() );
+    }
+
 } // namespace sc
