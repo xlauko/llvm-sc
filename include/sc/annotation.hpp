@@ -64,7 +64,12 @@ namespace sc
 
         template< typename T > using generator = cppcoro::generator< T >;
 
-        template< typename Value > using annotated = std::pair< Value *, annotation >;
+        template< typename Value >
+        using llvm_value =
+            typename std::conditional< std::is_pointer_v< Value >, Value, Value * >::type;
+
+        template< typename Value >
+        using annotated = std::pair< llvm_value< Value >, annotation >;
 
         template< typename Value >
         static generator< annotated< Value > > enumerate( llvm::Module &m );
