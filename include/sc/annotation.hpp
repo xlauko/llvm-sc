@@ -35,6 +35,17 @@ namespace sc
             ( _parts.push_back( parts ), ... );
         }
 
+        explicit annotation( llvm::StringRef anno )
+        {
+            size_t oldoff = 0, off = 0;
+            do {
+                    off = anno.find( '.', oldoff );
+                    _parts.emplace_back( anno.substr( oldoff, off - oldoff ) );
+                    oldoff = off + 1;
+                }
+            while ( off != std::string::npos );
+        }
+
         annotation( const_iterator begin, const_iterator end ) : _parts( begin, end ) {}
 
         [[nodiscard]] const std::string &back() const;
@@ -53,7 +64,7 @@ namespace sc
 
         template< typename T > using generator = cppcoro::generator< T >;
 
-        template< typename Value > using annotated = std::pair< Value, annotation >;
+        template< typename Value > using annotated = std::pair< Value *, annotation >;
 
         template< typename Value >
         static generator< annotated< Value > > enumerate( llvm::Module &m );
