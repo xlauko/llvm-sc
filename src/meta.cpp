@@ -32,9 +32,21 @@ namespace sc::meta
         {
             if constexpr ( std::is_same_v< T, llvm::Argument > )
                 // FIXME allow multiple tags
-                arg_set( val, meta );
+                argument::set( val, meta );
             else
                 val->setMetadata( tag, tuple::create( node( meta ) ) );
+        }
+
+        void function_init( llvm::Function *fn )
+        {
+            auto size = fn->arg_size();
+
+            if ( !fn->getMetadata( tag::arguments ) ) 
+            {
+                auto value = [ & ] { return node( tag::none ); };
+                auto *data = tuple::create( size, value );
+                fn->setMetadata( tag::arguments, data );
+            }
         }
 
     } // namespace detail
@@ -53,6 +65,20 @@ namespace sc::meta
         auto res        = llvm::cast< llvm::MDString >( str )->getString().str();
         if ( res.empty() ) return std::nullopt;
         return res;
+    }
+
+    void argument::set( llvm::Argument *arg, meta_str str )
+    {
+        argument::set( arg, meta::node( str ) );
+    }
+
+    void argument::set( llvm::Argument *arg, node_t node )
+    {
+        auto fn = arg->getParent();
+        detail::function_init( fn );
+
+        auto meta = fn->getMetadata( tag::arguments );
+        meta->replaceOperandWith( arg->getArgNo(), node );
     }
 
     void set( llvm::Value *v, tag_t t, meta_str m )

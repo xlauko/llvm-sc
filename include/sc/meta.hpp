@@ -26,20 +26,35 @@ namespace sc::meta
     using meta_str       = llvm::StringRef;
     using maybe_meta_str = std::optional< meta_str >;
 
-    using tag_t = llvm::StringRef;
+    using tag_t  = llvm::StringRef;
+    using ctag_t = llvm::StringLiteral;
+
+    namespace tag
+    {
+        constexpr ctag_t none      = "sc.meta.none";
+        constexpr ctag_t arguments = "sc.meta.arguments";
+    } // namespace tag
 
     node_t node( meta_str str );
 
     maybe_meta_str get_string( node_t n );
 
-    void set( llvm::Value *val, tag_t tag );
-    void set( llvm::Value *val, tag_t tag, meta_str meta );
+    void set( llvm::Value *val, tag_t tag, meta_str meta = tag::none );
 
     struct tuple
     {
         using meta_array = llvm::ArrayRef< llvm::Metadata * >;
 
         static inline llvm::MDTuple *create( const meta_array &arr );
+
+        template< typename Init >
+        static inline llvm::MDTuple *create( unsigned size, Init init );
+    };
+
+    struct argument
+    {
+        static void set( llvm::Argument *arg, meta_str str );
+        static void set( llvm::Argument *, node_t node );
     };
 
 } // namespace sc::meta
