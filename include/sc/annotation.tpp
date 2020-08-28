@@ -21,7 +21,7 @@
 namespace sc
 {
     template< typename Value >
-    auto annotation::enumerate( llvm::Module &m ) -> generator< annotation >
+    auto annotation::enumerate( llvm::Module &m ) -> generator< annotated< Value > >
     {
         using const_array = llvm::ConstantArray;
         const auto annos  = m.getNamedGlobal( "llvm.global.annotations" );
@@ -38,7 +38,7 @@ namespace sc
                         .operand( 0 )
                         .template cast< llvm::ConstantDataArray >()
                         .freeze();
-                    co_yield annotation( anno->getAsCString() );
+                    co_yield { val, annotation( anno->getAsCString() ) };
                 }
             }
         }
@@ -46,11 +46,11 @@ namespace sc
 
     template< typename Value >
     auto annotation::enumerate_in_namespace( annotation ns, llvm::Module &m )
-        -> generator< annotation >
+        -> generator< annotated< Value > >
     {
         for ( auto &&ann : enumerate< Value >( m ) )
-            if ( ann.in_namespace( ns ) )
-                co_yield( ann );
+            if ( ann.second.in_namespace( ns ) )
+                co_yield ann;
     }
 
 } // namespace sc

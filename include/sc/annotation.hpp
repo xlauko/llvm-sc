@@ -53,12 +53,14 @@ namespace sc
 
         template< typename T > using generator = cppcoro::generator< T >;
 
-        template< typename Value >
-        static generator< annotation > enumerate( llvm::Module &m );
+        template< typename Value > using annotated = std::pair< Value, annotation >;
 
         template< typename Value >
-        static generator< annotation > enumerate_in_namespace( annotation ns,
-                                                               llvm::Module &m );
+        static generator< annotated< Value > > enumerate( llvm::Module &m );
+
+        template< typename Value >
+        static generator< annotated< Value > > enumerate_in_namespace( annotation ns,
+                                                                       llvm::Module &m );
     };
 
 } // namespace sc
