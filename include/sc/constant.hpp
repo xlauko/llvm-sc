@@ -45,24 +45,9 @@ namespace sc
 
     namespace literals
     {
-        inline constant_int * operator "" _i8( char8_t v ) { return i8( v ); }
-        inline constant_int * operator "" _i8( char16_t v ) { return i8( v ); }
-        inline constant_int * operator "" _i8( char32_t v ) { return i8( v ); }
-        inline constant_int * operator "" _i8( unsigned long long v ) { return i8( v ); }
-
-        inline constant_int * operator "" _i16( char8_t v ) { return i16( v ); }
-        inline constant_int * operator "" _i16( char16_t v ) { return i16( v ); }
-        inline constant_int * operator "" _i16( char32_t v ) { return i16( v ); }
+        inline constant_int * operator "" _i8( unsigned long long v )  { return i8( v ); }
         inline constant_int * operator "" _i16( unsigned long long v ) { return i16( v ); }
-
-        inline constant_int * operator "" _i32( char8_t v ) { return i32( v ); }
-        inline constant_int * operator "" _i32( char16_t v ) { return i32( v ); }
-        inline constant_int * operator "" _i32( char32_t v ) { return i32( v ); }
         inline constant_int * operator "" _i32( unsigned long long v ) { return i32( v ); }
-
-        inline constant_int * operator "" _i64( char8_t v ) { return i64( v ); }
-        inline constant_int * operator "" _i64( char16_t v ) { return i64( v ); }
-        inline constant_int * operator "" _i64( char32_t v ) { return i64( v ); }
         inline constant_int * operator "" _i64( unsigned long long v ) { return i64( v ); }
     }
 }
