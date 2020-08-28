@@ -41,6 +41,8 @@ namespace sc::meta
 
     void set( llvm::Value *val, tag_t tag, meta_str meta = tag::none );
 
+    maybe_meta_str get( llvm::Value *val, tag_t tag );
+
     struct tuple
     {
         using meta_array = llvm::ArrayRef< llvm::Metadata * >;
@@ -54,7 +56,8 @@ namespace sc::meta
     struct argument
     {
         static void set( llvm::Argument *arg, meta_str str );
-        static void set( llvm::Argument *, node_t node );
+        static void set( llvm::Argument *arg, node_t node );
+        static maybe_meta_str get( llvm::Argument *arg );
     };
 
 } // namespace sc::meta

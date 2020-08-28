@@ -20,6 +20,7 @@
 #include <llvm/IR/Instruction.h>
 #include <sc/case.hpp>
 #include <sc/context.hpp>
+#include <sc/transformer.hpp>
 #include <sc/meta.hpp>
 
 namespace sc::meta
@@ -28,13 +29,37 @@ namespace sc::meta
     {
         void arg_set( llvm::Argument *, meta_str ) {}
 
-        template< typename T > void set( T *val, tag_t tag, meta_str meta )
+        template< typename T > 
+        void set( T *val, tag_t tag, meta_str meta )
         {
             if constexpr ( std::is_same_v< T, llvm::Argument > )
-                // FIXME allow multiple tags
                 argument::set( val, meta );
             else
                 val->setMetadata( tag, tuple::create( node( meta ) ) );
+        }
+
+        maybe_meta_str value( node_t node, unsigned idx = 0 )
+        {
+            if ( !node )
+                return std::nullopt;
+
+            assert( node->getNumOperands() );
+            
+            auto & op = node->getOperand( idx );
+            auto str = llvm::cast< llvm::MDString >( llvm::cast< llvm::MDNode >( op )->getOperand( 0 ) );
+            
+            if (auto res = str->getString().str(); !res.empty() )
+                return res;
+            return std::nullopt;
+        }
+
+        template< typename T > 
+        maybe_meta_str get( T *val, tag_t tag )
+        {
+            if constexpr ( std::is_same_v< T, llvm::Argument > )
+                return argument::get( val );
+            else
+                return value( val->getMetadata( tag ) );
         }
 
         void function_init( llvm::Function *fn )
@@ -81,6 +106,14 @@ namespace sc::meta
         meta->replaceOperandWith( arg->getArgNo(), node );
     }
 
+    maybe_meta_str argument::get( llvm::Argument *arg )
+    {
+        auto fn = arg->getParent();
+        if ( auto node = fn->getMetadata( tag::arguments ) )
+            return detail::value( node, arg->getArgNo() );
+        return std::nullopt;
+    }
+
     void set( llvm::Value *v, tag_t t, meta_str m )
     {
         sc::llvmcase(
@@ -90,6 +123,19 @@ namespace sc::meta
             [ & ]( llvm::GlobalVariable *g ) { detail::set( g, t, m ); },
             [ & ]( llvm::Function *f ) { detail::set( f, t, m ); },
             [ & ]( llvm::Value * ) { __builtin_unreachable(); } );
+    }
+
+    maybe_meta_str get( llvm::Value *val, tag_t tag )
+    {
+        maybe_meta_str str = std::nullopt;
+        sc::llvmcase(
+            val,
+            [ & ]( llvm::Argument *a ) { str = detail::get( a, tag ); },
+            [ & ]( llvm::Instruction *i ) { str = detail::get( i, tag ); },
+            [ & ]( llvm::GlobalVariable *g ) { str = detail::get( g, tag ); },
+            [ & ]( llvm::Function *f ) { str = detail::get( f, tag ); },
+            [ & ]( llvm::Value * ) { __builtin_unreachable(); } );
+        return str;
     }
 
 } // namespace sc::meta
