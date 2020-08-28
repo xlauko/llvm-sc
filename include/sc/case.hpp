@@ -1,5 +1,6 @@
 /*
  * (c) 2020 Henrich Lauko <xlauko@mail.muni.cz>
+ * (c) 2015 Vladimír Štill <xstill@fi.muni.cz>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,5 +69,4 @@ namespace sc
     bool llvmcase( What &w, Lambdas &&...lambdas ) {
         return llvmcase( &w, std::forward< Lambdas >( lambdas )... );
     }
-
-}
+} // namespace sc
