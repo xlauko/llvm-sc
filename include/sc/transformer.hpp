@@ -17,10 +17,9 @@
 #pragma once
 
 #include <experimental/type_traits>
+#include <llvm/Support/Casting.h>
 #include <type_traits>
 #include <utility>
-
-#include <llvm/Support/Casting.h>
 
 namespace sc
 {
@@ -34,34 +33,32 @@ namespace sc
             typename std::conditional< std::is_pointer_v< Value >, Value, Value * >::type;
 
         explicit constexpr LLVMTransformer( const value_type &val ) : state( val ) {}
-        explicit constexpr LLVMTransformer( value_type &&val ) : state( std::move( val ) ) {}
+        explicit constexpr LLVMTransformer( value_type &&val ) : state( std::move( val ) )
+        {}
 
         template< typename F > constexpr decltype( auto ) apply( F f ) noexcept
         {
             using R = decltype( f( state ) );
-            if ( state )
-                return LLVMTransformer< R >( f( state ) );
+            if ( state ) return LLVMTransformer< R >( f( state ) );
             return LLVMTransformer< R >( nullptr );
         }
 
-        constexpr decltype( auto ) operand( std::size_t idx ) noexcept
+        constexpr decltype( auto ) operand( std::uint32_t idx ) noexcept
         {
-            constexpr auto detected = std::experimental::is_detected_v<
-                get_operand_t, std::remove_pointer_t< Value > >;
+            constexpr auto detected =
+                std::experimental::is_detected_v< get_operand_t,
+                                                  std::remove_pointer_t< Value > >;
             if constexpr ( detected ) {
-                return apply( [ idx ]( const auto &v ) {
-                    return v->getOperand( idx );
-                } );
+                    return apply(
+                        [ idx ]( const auto &v ) { return v->getOperand( idx ); } );
             } else {
-                return LLVMTransformer< value_type >( nullptr );
-            }
+                    return LLVMTransformer< value_type >( nullptr );
+                }
         }
 
         template< typename T > constexpr decltype( auto ) cast() noexcept
         {
-            return apply( [] ( const auto &v ) {
-                return llvm::dyn_cast< T >( v );
-            } );
+            return apply( []( const auto &v ) { return llvm::dyn_cast< T >( v ); } );
         }
 
         constexpr value_type freeze() noexcept

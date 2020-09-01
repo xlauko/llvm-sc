@@ -1,9 +1,8 @@
 #include <catch.hpp>
-
-#include <sc/init.hpp>
-#include <sc/transformer.hpp>
 #include <sc/builder.hpp>
 #include <sc/constant.hpp>
+#include <sc/init.hpp>
+#include <sc/transformer.hpp>
 
 TEST_CASE( "transformer" )
 {
@@ -12,13 +11,11 @@ TEST_CASE( "transformer" )
 
     sc::builder_t b;
 
-    using sc::i8;
-
     SECTION( "operand" )
     {
         using namespace sc::literals;
 
         auto i = b.add( 10_i8, 5_i8 );
-        REQUIRE( llvm::isa< sc::instruction >( i ) );
+        REQUIRE( llvm::isa< llvm::Constant >( i ) );
     }
 }
