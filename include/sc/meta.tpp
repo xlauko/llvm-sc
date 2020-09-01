@@ -26,8 +26,8 @@ namespace sc::meta
         return llvm::MDTuple::getDistinct( sc::context(), arr );
     }
 
-    template< typename Init > 
-    llvm::MDTuple *tuple::create( unsigned size, Init init )
+    template< typename Init >
+    llvm::MDTuple *tuple::create( long unsigned size, Init init )
     {
         std::vector< llvm::Metadata * > values( size );
         std::generate( values.begin(), values.end(), init );

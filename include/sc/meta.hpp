@@ -50,7 +50,7 @@ namespace sc::meta
         static inline llvm::MDTuple *create( const meta_array &arr );
 
         template< typename Init >
-        static inline llvm::MDTuple *create( unsigned size, Init init );
+        static inline llvm::MDTuple *create( long unsigned size, Init init );
     };
 
     struct argument
