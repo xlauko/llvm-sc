@@ -41,13 +41,13 @@ namespace sc
 
     using apint = llvm::APInt;
 
-    const apint& value( constant_int * c );
+    const apint& get_value( constant_int * c );
 
     namespace literals
     {
-        inline constant_int * operator "" _i8( unsigned long long v )  { return i8( v ); }
-        inline constant_int * operator "" _i16( unsigned long long v ) { return i16( v ); }
-        inline constant_int * operator "" _i32( unsigned long long v ) { return i32( v ); }
-        inline constant_int * operator "" _i64( unsigned long long v ) { return i64( v ); }
+        inline constant_int * operator "" _i8( unsigned long long v )  { return i8(  static_cast< uint8_t >( v ) ); }
+        inline constant_int * operator "" _i16( unsigned long long v ) { return i16( static_cast< uint16_t >( v ) ); }
+        inline constant_int * operator "" _i32( unsigned long long v ) { return i32( static_cast< uint32_t >( v ) ); }
+        inline constant_int * operator "" _i64( unsigned long long v ) { return i64( static_cast< uint32_t >( v ) ); }
     }
 }
