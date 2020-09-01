@@ -1,47 +1,35 @@
 include( CTest )
 
-add_executable( sctests )
+add_executable( llvmsc-tests )
 
-target_sources( sctests
+add_library( catch_main STATIC src/main.cpp )
+target_link_libraries( catch_main PRIVATE project_options )
+
+target_include_directories( catch_main
+    PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+)
+
+target_sources( llvmsc-tests
     PRIVATE
-    src/main.cpp
-    src/init.cpp
-    src/meta.cpp
-    src/constant.cpp
-    src/annotation.cpp
-    src/transformer.cpp
+        src/init.cpp
+        src/meta.cpp
+        src/builder.cpp
+        src/constant.cpp
+        src/annotation.cpp
+        src/transformer.cpp
 )
 
-set_target_properties( sctests
-    PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED YES
-        CXX_EXTENSIONS NO
+target_link_libraries( llvmsc-tests
+    PRIVATE project_options project_warnings catch_main llvmsc
 )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines" )
-
-target_link_libraries( sctests llvmsc )
-
-target_include_directories( sctests
+target_include_directories( llvmsc-tests
     PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 )
 
-target_compile_features( sctests PRIVATE cxx_std_20 )
+if( NOT LLVM_ENABLE_RTTI )
+  set_target_properties( llvmsc-tests PROPERTIES COMPILE_FLAGS "-fno-rtti" )
+endif()
 
-target_compile_options(
-    sctests
-    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
-            $<$<CXX_COMPILER_ID:MSVC>:/W4>
-            $<$<CXX_COMPILER_ID:MSVC>:/WX>
-            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall>
-            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
-            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-pedantic>
-)
-
-# add `-DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE to switch to runtime only checks
-# target_compile_definitions(SI_detail_tests PRIVATE
-# CATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
-
-add_test( NAME sctests COMMAND sctests )
+add_test( NAME llvmsc-tests COMMAND llvmsc-tests )
