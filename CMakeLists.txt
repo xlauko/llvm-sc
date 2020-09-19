@@ -27,28 +27,28 @@ project( lart
 include( cmake/project_settings.cmake )
 include( cmake/prevent_in_source_builds.cmake )
 
-add_library( project_options INTERFACE )
-target_compile_features( project_options INTERFACE cxx_std_20 )
-target_compile_options( project_options INTERFACE "-fcoroutines" )
+add_library( sc_project_options INTERFACE )
+target_compile_features( sc_project_options INTERFACE cxx_std_20 )
+target_compile_options( sc_project_options INTERFACE "-fcoroutines" )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" )
     option( ENABLE_BUILD_WITH_TIME_TRACE
         "Enable -ftime-trace to generate time tracing .json files on clang" OFF )
     if ( ENABLE_BUILD_WITH_TIME_TRACE )
-        add_compile_definitions( project_options INTERFACE -ftime-trace )
+        add_compile_definitions( sc_project_options INTERFACE -ftime-trace )
     endif()
 endif()
 
-add_library( project_warnings INTERFACE )
+add_library( sc_project_warnings INTERFACE )
 
 include( cmake/compiler_warnings.cmake )
-set_project_warnings( project_warnings )
+set_project_warnings( sc_project_warnings )
 
 # enable cache system
 include( cmake/ccache.cmake )
 
 include( cmake/sanitizers.cmake )
-enable_sanitizers( project_options )
+enable_sanitizers( sc_project_options )
 
 # allow for static analysis options
 include( cmake/static_analyzers.cmake )
@@ -60,7 +60,7 @@ option( ENABLE_FUZZING "Enable Fuzzing Builds" OFF )
 option( ENABLE_PCH "Enable Precompiled Headers" OFF )
 if ( ENABLE_PCH )
     target_precompile_headers(
-        project_options
+        sc_project_options
         INTERFACE
         <vector>
         <string>
@@ -78,7 +78,9 @@ add_library( llvmsc
     src/types.cpp
 )
 
-target_link_libraries( llvmsc PRIVATE project_options project_warnings )
+add_library( llvmsc::llvmsc ALIAS llvmsc )
+
+target_link_libraries( llvmsc PRIVATE sc_project_options sc_project_warnings )
 set_target_properties( llvmsc PROPERTIES CXX_EXTENSIONS OFF )
 
 target_include_directories( llvmsc
