@@ -20,8 +20,10 @@ target_sources( llvmsc-tests
 )
 
 target_link_libraries( llvmsc-tests
-    PRIVATE sc_project_options sc_project_warnings catch_main llvmsc
+    PRIVATE sc_project_options sc_project_warnings catch_main llvmsc ${llvm}
 )
+
+enable_sanitizers( llvmsc-tests )
 
 target_include_directories( llvmsc-tests
     PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

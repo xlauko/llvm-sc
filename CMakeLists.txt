@@ -48,7 +48,6 @@ set_project_warnings( sc_project_warnings )
 include( cmake/ccache.cmake )
 
 include( cmake/sanitizers.cmake )
-enable_sanitizers( sc_project_options )
 
 # allow for static analysis options
 include( cmake/static_analyzers.cmake )
@@ -78,6 +77,7 @@ add_library( llvmsc
     src/types.cpp
 )
 
+set_property(TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
 target_link_libraries( llvmsc PRIVATE sc_project_options sc_project_warnings )
@@ -127,10 +127,8 @@ include_directories( SYSTEM ${LLVM_INCLUDE_DIRS} )
 llvm_map_components_to_libnames( llvm support core irreader )
 
 if( NOT LLVM_ENABLE_RTTI )
-  target_compile_options( llvmsc PRIVATE "-fno-rtti" )
+  target_compile_options( llvmsc PUBLIC "-fno-rtti" )
 endif()
-
-target_link_libraries( llvmsc PUBLIC ${llvm} )
 
 # TESTS
 if ( ENABLE_TESTING )
