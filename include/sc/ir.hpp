@@ -28,4 +28,22 @@ namespace sc
     using module_ptr = llvm::Module *;
 
     using instruction = llvm::Instruction;
+
+    inline llvm::Function* get_function( llvm::Argument *a )
+    {
+        return a->getParent();
+    }
+
+    inline llvm::Function* get_function( llvm::Instruction *i )
+    {
+        return i->getParent()->getParent();
+    }
+
+    inline llvm::Function* get_function( llvm::Value *v )
+    {
+        if ( auto arg = llvm::dyn_cast< llvm::Argument >( v ) )
+            return get_function( arg );
+        return get_function( llvm::cast< llvm::Instruction >( v ) );
+    }
+
 } // namespace sc
