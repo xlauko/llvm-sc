@@ -125,4 +125,4 @@ namespace sc::fmt
         return llvm_to_string( type );
     }
 
-} // namespace lart
+} // namespace sc::fmt
