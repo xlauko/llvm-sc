@@ -18,6 +18,7 @@
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
+#include <llvm/IR/CallSite.h>
 
 #include <ranges>
 
@@ -26,12 +27,41 @@ namespace sc::views
     template< typename F >
     auto map( F &&f ) { return std::views::transform( std::forward< F >( f ) ); }
 
-    auto flatten = std::views::join;
+    static const auto flatten = std::views::join;
 
-    auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
-    auto pointers = map(pointer);
+    static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
+    static const auto pointers = map(pointer);
 
-    auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
+    static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
+
+    template< typename T >
+    struct IsClosure {
+        template< typename F >
+        bool operator()( F *v ) const { return llvm::isa< T >( v ); }
+        template< typename F >
+        bool operator()( F &v ) const { return llvm::isa< T >( &v ); }
+    };
+
+    template< typename T >
+    struct IsNotClosure {
+        template< typename F >
+        bool operator()( F *v ) const { return !llvm::isa< T >( v ); }
+        template< typename F >
+        bool operator()( F &v ) const { return !llvm::isa< T >( &v ); }
+    };
+
+    template< typename T > const IsClosure< T > is;
+    template< typename T > const IsNotClosure< T > isnot;
+
+    struct IsCallClosure
+    {
+        template< typename F >
+        bool operator()( F *v ) const { return static_cast< bool >( llvm::CallSite{ v } ); }
+        template< typename F >
+        bool operator()( F &v ) const { return static_cast< bool >( llvm::CallSite{ &v } ); }
+    };
+
+    static const IsCallClosure is_call;
 
     template< typename T >
     struct DynCastClosure {
@@ -49,8 +79,8 @@ namespace sc::views
         T *operator()( F &f ) { return llvm::cast< T >( &f ); }
     };
 
-    template< typename T > DynCastClosure< T > llvmdyncast;
-    template< typename T > CastClosure< T > llvmcast;
+    template< typename T > const DynCastClosure< T > llvmdyncast;
+    template< typename T > const CastClosure< T > llvmcast;
 
     auto instructions( llvm::Module &m )   { return m | flatten | flatten | pointers; }
     auto instructions( llvm::Function &f ) { return f | flatten | pointers; }
