@@ -82,8 +82,8 @@ namespace sc::views
     template< typename T > const DynCastClosure< T > llvmdyncast;
     template< typename T > const CastClosure< T > llvmcast;
 
-    auto instructions( llvm::Module &m )   { return m | flatten | flatten | pointers; }
-    auto instructions( llvm::Function &f ) { return f | flatten | pointers; }
+    inline auto instructions( llvm::Module &m )   { return m | flatten | flatten | pointers; }
+    inline auto instructions( llvm::Function &f ) { return f | flatten | pointers; }
 
     template< typename T, typename range_t >
     auto filter( range_t &&range )
