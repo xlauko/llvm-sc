@@ -34,6 +34,20 @@ namespace sc::views
 
     static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
 
+    template< typename R >
+    using frozen = std::vector< std::ranges::range_value_t< R > >;
+
+    inline auto freeze( std::ranges::range auto r ) -> frozen< decltype(r) >
+    {
+        frozen< decltype(r) > v;
+        if constexpr( std::ranges::sized_range< decltype(r) > ) {
+            v.reserve( std::ranges::size(r) );
+        }
+
+        std::ranges::copy( r, std::back_inserter(v) );
+        return v;
+    }
+
     template< typename T >
     struct IsClosure {
         template< typename F >
@@ -82,16 +96,27 @@ namespace sc::views
     template< typename T > const DynCastClosure< T > llvmdyncast;
     template< typename T > const CastClosure< T > llvmcast;
 
-    inline auto instructions( llvm::Module &m )   { return m | flatten | flatten | pointers; }
-    inline auto instructions( llvm::Function &f ) { return f | flatten | pointers; }
+    template< typename T >
+    static auto mapdyncast = map( llvmdyncast< T > );
 
-    template< typename T, typename range_t >
-    auto filter( range_t &&range )
+    template< typename T >
+    static auto mapcast = map( llvmcast< T > );
+
+    inline auto instructions( llvm::Module &m )
     {
-        return range | map( llvmdyncast< T > ) | std::views::filter( notnull );
+        return m | map( flatten ) | flatten | pointers;
+    }
+
+    inline auto instructions( llvm::Function &f )
+    {
+        return f | flatten | pointers;
     }
 
     template< typename T, typename LLVM >
-    auto filter( LLVM &ll ) { return filter< T >( instructions( ll ) ); }
+    auto filter( LLVM &ll )
+    {
+        auto r = freeze( sc::views::instructions( ll ) ); // FIXME get rid of one copy
+        return freeze( r | std::views::filter( is< T > ) | mapcast< T > );
+    }
 
 } // namespace sc::views
