@@ -46,4 +46,9 @@ namespace sc
         return get_function( llvm::cast< llvm::Instruction >( v ) );
     }
 
+    inline llvm::Module* get_module( llvm::Value *v )
+    {
+        return get_function(v)->getParent();
+    }
+
 } // namespace sc
