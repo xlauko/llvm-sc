@@ -32,6 +32,9 @@ namespace sc::views
     static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
     static const auto pointers = map(pointer);
 
+    static auto type = [] ( const auto &val ) { return val->getType(); };
+    static auto types = map(type);
+
     static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
 
     template< typename R >
