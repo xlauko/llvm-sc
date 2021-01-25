@@ -20,6 +20,8 @@
 
 #include <concepts>
 
+#include <sc/types.hpp>
+
 namespace sc
 {
     using constant = llvm::Constant;
@@ -36,6 +38,8 @@ namespace sc
     inline auto i_( uint16_t v ) { return i16( v ); }
     inline auto i_( uint32_t v ) { return i32( v ); }
     inline auto i_( uint64_t v ) { return i64( v ); }
+
+    inline auto null( ptr_type t ) { return llvm::ConstantPointerNull::get( t ); }
 
     inline auto iv( std::integral auto v ) { return i_( v ); }
 
