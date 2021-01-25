@@ -126,4 +126,11 @@ namespace sc::fmt
         return llvm_to_string( type );
     }
 
+    inline std::string type( llvm::Type * t )
+    {
+        if ( t->isPointerTy() )
+            return type( t->getPointerElementType() ) + "p";
+        return llvm_name(t);
+    }
+
 } // namespace sc::fmt
