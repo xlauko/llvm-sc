@@ -58,6 +58,11 @@ namespace sc
             values args;
         };
 
+        struct ret
+        {
+            value val;
+        };
+
     } // namespace build
 
     namespace action
@@ -85,8 +90,24 @@ namespace sc
 
         struct call
         {
+            call( func fn, const values &as )
+                : function( fn )
+            {
+                for ( auto arg : as )
+                    args.push_back( arg );
+            }
+
+            call( func fn, std::vector< std::optional< value > > &&as )
+                : function( fn ), args( std::move( as ) )
+            {}
+
             func function;
             std::vector< std::optional< value > > args;
+        };
+
+        struct ret
+        {
+            std::optional< value > val;
         };
 
         struct last {}; // last produced value
@@ -135,6 +156,8 @@ namespace sc
 
         auto call( func fn, const values &args ) { return CreateCall( fn, args ); }
 
+        auto ret( value val ) { return CreateRet( val ); }
+
         auto create( build::alloc a )
         {
             if ( a.name.has_value() )
@@ -152,6 +175,8 @@ namespace sc
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
 
         auto create( const build::call &c ) { return call( c.function, c.args ); }
+
+        auto create( build::ret r ) { return ret( r.val ); }
     };
 
     struct stack_builder
@@ -213,6 +238,14 @@ namespace sc
             for ( auto arg : c.args )
                 args.push_back( arg.has_value() ? arg.value() : pop() );
             push( builder->create( build::call{ c.function, args } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::ret r ) &&
+        {
+            value val = r.val.has_value() ? r.val.value() : pop();
+            builder->create( build::ret{ val } );
+            pop(); // pop after basic blocks terminator
             return std::move(*this);
         }
 
