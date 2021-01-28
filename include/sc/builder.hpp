@@ -24,6 +24,10 @@
 namespace sc
 {
     using value = llvm::Value *;
+    using func  = llvm::Function *;
+
+    using values = std::vector< value >;
+
     namespace build
     {
         namespace detail
@@ -47,6 +51,12 @@ namespace sc
         };
 
         struct add : detail::binary {};
+
+        struct call
+        {
+            func function;
+            values args;
+        };
 
     } // namespace build
 
@@ -72,6 +82,12 @@ namespace sc
         };
 
         using add = detail::binary;
+
+        struct call
+        {
+            func function;
+            std::vector< std::optional< value > > args;
+        };
 
         struct last {}; // last produced value
 
@@ -117,6 +133,8 @@ namespace sc
 
         auto add( value l, value r ) { return CreateAdd( l, r ); }
 
+        auto call( func fn, const values &args ) { return CreateCall( fn, args ); }
+
         auto create( build::alloc a )
         {
             if ( a.name.has_value() )
@@ -132,6 +150,8 @@ namespace sc
         }
 
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
+
+        auto create( const build::call &c ) { return call( c.function, c.args ); }
     };
 
     struct stack_builder
@@ -184,6 +204,15 @@ namespace sc
             value l = a.lhs.has_value() ? a.lhs.value() : pop();
             value r = a.rhs.has_value() ? a.rhs.value() : pop();
             push( builder->create( build::add{ l, r } ) );
+            return std::move(*this);
+        }
+
+        auto apply( const action::call &c ) &&
+        {
+            values args;
+            for ( auto arg : c.args )
+                args.push_back( arg.has_value() ? arg.value() : pop() );
+            push( builder->create( build::call{ c.function, args } ) );
             return std::move(*this);
         }
 
