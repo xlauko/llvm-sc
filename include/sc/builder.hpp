@@ -41,13 +41,13 @@ namespace sc
         };
 
         struct load
-        { 
+        {
             std::optional< type > ty;
             value ptr;
         };
 
         struct add : detail::binary {};
-        
+
     } // namespace build
 
     namespace action
@@ -73,8 +73,8 @@ namespace sc
 
         using add = detail::binary;
 
-        struct last {}; //last produced value
-        
+        struct last {}; // last produced value
+
         struct create_block { std::string name = ""; };
 
         struct create_function
@@ -84,6 +84,8 @@ namespace sc
             std::vector< type > args;
             bool vararg = false;
         };
+
+        struct function { llvm::Function * function; };
 
         struct module { llvm::Module * module; };
 
@@ -124,8 +126,8 @@ namespace sc
 
         auto create( build::load l )
         {
-            if ( l.ty.has_value() ) 
-                return load( l.ty.value(), l.ptr ); 
+            if ( l.ty.has_value() )
+                return load( l.ty.value(), l.ptr );
             return load( l.ptr );
         }
 
@@ -143,17 +145,17 @@ namespace sc
 
         stack_builder( stack_builder && ) = default;
         stack_builder( const stack_builder& ) = delete;
-        
+
         ~stack_builder() = default;
 
         void push( value v ) { stack.push_back( v ); }
         void push( basicblock bb ) { blocks.push_back( bb ); }
         void push( function f ) { functions.push_back( f ); }
 
-        value pop() 
+        value pop()
         {
             assert( !stack.empty() );
-            value v = stack.back(); 
+            value v = stack.back();
             stack.pop_back();
             return v;
         }
@@ -165,11 +167,11 @@ namespace sc
             if ( a.name.has_value() )
                 vars[ a.name.value() ] = var;
             else
-                push( var ); 
+                push( var );
 
             return std::move( *this );
         }
-        
+
         auto apply( action::load l ) &&
         {
             value ptr = l.from_var.has_value() ? vars.at( l.from_var.value() ) : pop();
@@ -177,7 +179,7 @@ namespace sc
             return std::move(*this);
         }
 
-        auto apply( action::add a ) && 
+        auto apply( action::add a ) &&
         {
             value l = a.lhs.has_value() ? a.lhs.value() : pop();
             value r = a.rhs.has_value() ? a.rhs.value() : pop();
@@ -198,6 +200,13 @@ namespace sc
         auto apply( action::module m ) &&
         {
             module = m.module;
+            return std::move(*this);
+        }
+
+        auto apply( action::function f ) &&
+        {
+            module = f.function->getParent();
+            push( f.function );
             return std::move(*this);
         }
 
