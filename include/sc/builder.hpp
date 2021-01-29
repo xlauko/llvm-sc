@@ -147,6 +147,14 @@ namespace sc
             std::optional< value > val;
         };
 
+        struct inspect
+        {
+            using callback = std::function< void( void ) >;
+            explicit inspect( callback &&c ) : call( std::move( c ) ) {}
+
+            callback call;
+        };
+
         struct last {}; // last produced value
 
         struct create_block { std::string name = ""; };
@@ -370,6 +378,12 @@ namespace sc
         }
 
         value apply( action::last ) { return pop(); }
+
+        auto apply( action::inspect ins ) &&
+        {
+            ins.call();
+            return std::move( *this );
+        }
 
         std::unique_ptr< builder_t > builder;
 
