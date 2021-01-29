@@ -24,9 +24,10 @@
 namespace sc
 {
     using value = llvm::Value *;
-    using func  = llvm::Function *;
-
     using values = std::vector< value >;
+
+    using basicblock = llvm::BasicBlock *;
+    using function = llvm::Function *;
 
     namespace build
     {
@@ -52,15 +53,21 @@ namespace sc
 
         struct add : detail::binary {};
 
+        struct bitcast
+        {
+            value val;
+            type to;
+        };
+
         struct call
         {
-            func function;
+            function fn;
             values args;
         };
 
         struct ret
         {
-            value val;
+            std::optional< value > val;
         };
 
     } // namespace build
@@ -88,20 +95,26 @@ namespace sc
 
         using add = detail::binary;
 
+        struct bitcast
+        {
+            std::optional< value > val;
+            type to;
+        };
+
         struct call
         {
-            call( func fn, const values &as )
-                : function( fn )
+            call( function _fn, const values &as )
+                : fn( _fn )
             {
                 for ( auto arg : as )
                     args.push_back( arg );
             }
 
-            call( func fn, std::vector< std::optional< value > > &&as )
-                : function( fn ), args( std::move( as ) )
+            call( function _fn, std::vector< std::optional< value > > &&as )
+                : fn( _fn ), args( std::move( as ) )
             {}
 
-            func function;
+            function fn;
             std::vector< std::optional< value > > args;
         };
 
@@ -154,9 +167,12 @@ namespace sc
 
         auto add( value l, value r ) { return CreateAdd( l, r ); }
 
-        auto call( func fn, const values &args ) { return CreateCall( fn, args ); }
+        auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
+
+        auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
 
         auto ret( value val ) { return CreateRet( val ); }
+        auto retvoid() { return CreateRetVoid(); }
 
         auto create( build::alloc a )
         {
@@ -174,16 +190,18 @@ namespace sc
 
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
 
-        auto create( const build::call &c ) { return call( c.function, c.args ); }
+        auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
 
-        auto create( build::ret r ) { return ret( r.val ); }
+        auto create( const build::call &c ) { return call( c.fn, c.args ); }
+
+        auto create( build::ret r )
+        {
+            return r.val.has_value() ? ret( r.val.value() ) : retvoid();
+        }
     };
 
     struct stack_builder
     {
-        using basicblock = llvm::BasicBlock *;
-        using function = llvm::Function *;
-
         stack_builder()
             : builder( std::make_unique< builder_t >() )
         {}
@@ -232,20 +250,33 @@ namespace sc
             return std::move(*this);
         }
 
+        auto apply( action::bitcast c ) &&
+        {
+            value val = c.val.has_value() ? c.val.value() : pop();
+            push( builder->create( build::bitcast{ val, c.to } ) );
+            return std::move(*this);
+        }
+
         auto apply( const action::call &c ) &&
         {
             values args;
             for ( auto arg : c.args )
                 args.push_back( arg.has_value() ? arg.value() : pop() );
-            push( builder->create( build::call{ c.function, args } ) );
+            push( builder->create( build::call{ c.fn, args } ) );
             return std::move(*this);
         }
 
         auto apply( action::ret r ) &&
         {
-            value val = r.val.has_value() ? r.val.value() : pop();
-            builder->create( build::ret{ val } );
-            pop(); // pop after basic blocks terminator
+            auto fn = functions.back();
+            if ( fn->getReturnType()->isVoidTy() ) {
+                assert( !r.val.has_value() );
+                builder->create( build::ret{} );
+            } else {
+                value val = r.val.has_value() ? r.val.value() : pop();
+                builder->create( build::ret{ val } );
+            }
+            blocks.pop_back(); // basic block terminator
             return std::move(*this);
         }
 
