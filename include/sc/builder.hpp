@@ -126,6 +126,7 @@ namespace sc
         struct last {}; // last produced value
 
         struct create_block { std::string name = ""; };
+        struct set_block { basicblock b; };
 
         struct create_function
         {
@@ -206,8 +207,11 @@ namespace sc
             : builder( std::make_unique< builder_t >() )
         {}
 
-        stack_builder( stack_builder && ) = default;
+        stack_builder( stack_builder&& ) = default;
         stack_builder( const stack_builder& ) = delete;
+
+        stack_builder& operator=( stack_builder&& ) = default;
+        stack_builder& operator=( const stack_builder& ) = delete;
 
         ~stack_builder() = default;
 
@@ -287,6 +291,12 @@ namespace sc
             else
                 push( llvm::BasicBlock::Create( sc::context(), b.name ) );
             builder->SetInsertPoint( blocks.back() );
+            return std::move(*this);
+        }
+
+        auto apply( action::set_block set ) &&
+        {
+            builder->SetInsertPoint( set.b );
             return std::move(*this);
         }
 
