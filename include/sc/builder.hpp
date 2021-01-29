@@ -65,6 +65,11 @@ namespace sc
             basicblock thenbb, elsebb;
         };
 
+        struct branch
+        {
+            basicblock dst;
+        };
+
         struct call
         {
             function fn;
@@ -113,6 +118,11 @@ namespace sc
 
             std::optional< value > cond;
             std::optional< basicblock > thenbb, elsebb;
+        };
+
+        struct branch
+        {
+            std::optional< basicblock > dst;
         };
 
         struct call
@@ -184,10 +194,8 @@ namespace sc
 
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
-        auto condbr( value c, basicblock t, basicblock f ) {
-            c->dump();
-            return CreateCondBr( c, t, f );
-        }
+        auto condbr( value c, basicblock t, basicblock f ) { return CreateCondBr( c, t, f ); }
+        auto br( basicblock dst ) { return CreateBr(dst); }
 
         auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
 
@@ -212,7 +220,8 @@ namespace sc
 
         auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
 
-        auto create( const build::condbr &br ) { return condbr( br.cond, br.thenbb, br.elsebb ); }
+        auto create( build::condbr b ) { return condbr( b.cond, b.thenbb, b.elsebb ); }
+        auto create( build::branch b ) { return br( b.dst ); }
 
         auto create( const build::call &c ) { return call( c.fn, c.args ); }
 
@@ -288,6 +297,13 @@ namespace sc
             basicblock thenbb = br.thenbb.has_value() ? br.thenbb.value() : *std::next( current_block );
             basicblock elsebb = br.elsebb.has_value() ? br.elsebb.value() : *std::next( current_block, 2 );
             push( builder->create( build::condbr{ cond, thenbb, elsebb } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::branch br ) &&
+        {
+            basicblock dst = br.dst.has_value() ? br.dst.value() : *std::next( current_block );
+            push( builder->create( build::branch{ dst } ) );
             return std::move(*this);
         }
 
