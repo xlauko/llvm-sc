@@ -59,6 +59,12 @@ namespace sc
             type to;
         };
 
+        struct condbr
+        {
+            value cond;
+            basicblock thenbb, elsebb;
+        };
+
         struct call
         {
             function fn;
@@ -101,6 +107,14 @@ namespace sc
             type to;
         };
 
+        struct condbr
+        {
+            explicit condbr( value c ) : cond( c ) {}
+
+            std::optional< value > cond;
+            std::optional< basicblock > thenbb, elsebb;
+        };
+
         struct call
         {
             call( function _fn, const values &as )
@@ -126,7 +140,7 @@ namespace sc
         struct last {}; // last produced value
 
         struct create_block { std::string name = ""; };
-        struct set_block { basicblock b; };
+        struct advance_block { int value; };
 
         struct create_function
         {
@@ -170,6 +184,11 @@ namespace sc
 
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
+        auto condbr( value c, basicblock t, basicblock f ) {
+            c->dump();
+            return CreateCondBr( c, t, f );
+        }
+
         auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
 
         auto ret( value val ) { return CreateRet( val ); }
@@ -192,6 +211,8 @@ namespace sc
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
 
         auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
+
+        auto create( const build::condbr &br ) { return condbr( br.cond, br.thenbb, br.elsebb ); }
 
         auto create( const build::call &c ) { return call( c.fn, c.args ); }
 
@@ -261,6 +282,15 @@ namespace sc
             return std::move(*this);
         }
 
+        auto apply( action::condbr br ) &&
+        {
+            value cond = br.cond.has_value() ? br.cond.value() : pop();
+            basicblock thenbb = br.thenbb.has_value() ? br.thenbb.value() : *std::next( current_block );
+            basicblock elsebb = br.elsebb.has_value() ? br.elsebb.value() : *std::next( current_block, 2 );
+            push( builder->create( build::condbr{ cond, thenbb, elsebb } ) );
+            return std::move(*this);
+        }
+
         auto apply( const action::call &c ) &&
         {
             values args;
@@ -290,13 +320,15 @@ namespace sc
                 push( llvm::BasicBlock::Create( sc::context(), b.name, functions.back() ) );
             else
                 push( llvm::BasicBlock::Create( sc::context(), b.name ) );
-            builder->SetInsertPoint( blocks.back() );
+            current_block = std::prev( blocks.end() );
+            builder->SetInsertPoint( *current_block );
             return std::move(*this);
         }
 
-        auto apply( action::set_block set ) &&
+        auto apply( action::advance_block advance ) &&
         {
-            builder->SetInsertPoint( set.b );
+            std::advance( current_block, advance.value );
+            builder->SetInsertPoint( *current_block );
             return std::move(*this);
         }
 
@@ -330,7 +362,10 @@ namespace sc
         std::map< std::string, value > vars;
 
         std::vector< function > functions;
+
         std::vector< basicblock > blocks;
+        std::vector< basicblock >::iterator current_block;
+
         std::vector< value > stack;
     };
 
