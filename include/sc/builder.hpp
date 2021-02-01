@@ -174,6 +174,7 @@ namespace sc
 
         struct create_block { std::string name = ""; };
         struct advance_block { int value; };
+        struct set_block { std::string name; };
 
         struct create_function
         {
@@ -385,6 +386,17 @@ namespace sc
         auto apply( action::advance_block advance ) &&
         {
             std::advance( current_block, advance.value );
+            builder->SetInsertPoint( *current_block );
+            return std::move(*this);
+        }
+
+        auto apply( action::set_block set ) &&
+        {
+            current_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
+                return block->getName() == set.name;
+            } );
+
+            assert( current_block != blocks.end() );
             builder->SetInsertPoint( *current_block );
             return std::move(*this);
         }
