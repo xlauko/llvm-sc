@@ -29,6 +29,11 @@ namespace sc
     using basicblock = llvm::BasicBlock *;
     using function = llvm::Function *;
 
+    struct phi_edge
+    {
+        value val;
+        basicblock from;
+    };
 
     struct stack_builder;
 
@@ -55,6 +60,11 @@ namespace sc
         };
 
         struct add : detail::binary {};
+
+        struct phi
+        {
+            std::vector< phi_edge > edges;
+        };
 
         struct bitcast
         {
@@ -114,6 +124,8 @@ namespace sc
             std::optional< value > val;
             type to;
         };
+
+        using phi = build::phi;
 
         struct condbr
         {
@@ -205,6 +217,16 @@ namespace sc
 
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
+        auto phi( const std::vector< phi_edge > &edges )
+        {
+            auto n = static_cast< unsigned >( edges.size() );
+            assert( !edges.empty() );
+            auto phi = CreatePHI( edges.front().val->getType(), n );
+            for ( auto edge : edges )
+                phi->addIncoming( edge.val, edge.from );
+            return phi;
+        }
+
         auto condbr( value c, basicblock t, basicblock f ) { return CreateCondBr( c, t, f ); }
         auto br( basicblock dst ) { return CreateBr(dst); }
 
@@ -228,6 +250,8 @@ namespace sc
         }
 
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
+
+        auto create( build::phi p ) { return phi( p.edges ); }
 
         auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
 
@@ -292,6 +316,12 @@ namespace sc
             value l = a.lhs.has_value() ? a.lhs.value() : pop();
             value r = a.rhs.has_value() ? a.rhs.value() : pop();
             push( builder->create( build::add{ l, r } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::phi p ) &&
+        {
+            push( builder->create( p ) );
             return std::move(*this);
         }
 
