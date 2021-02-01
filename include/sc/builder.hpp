@@ -29,6 +29,9 @@ namespace sc
     using basicblock = llvm::BasicBlock *;
     using function = llvm::Function *;
 
+
+    struct stack_builder;
+
     namespace build
     {
         namespace detail
@@ -149,7 +152,7 @@ namespace sc
 
         struct inspect
         {
-            using callback = std::function< void( void ) >;
+            using callback = std::function< void( stack_builder* ) >;
             explicit inspect( callback &&c ) : call( std::move( c ) ) {}
 
             callback call;
@@ -381,7 +384,7 @@ namespace sc
 
         auto apply( action::inspect ins ) &&
         {
-            ins.call();
+            ins.call( this );
             return std::move( *this );
         }
 
