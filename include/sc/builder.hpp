@@ -313,6 +313,15 @@ namespace sc
             return v;
         }
 
+        value popvalue( std::optional< value > v )
+        {
+            return v.has_value() ? v.value() : pop();
+        }
+
+        basicblock popblock( std::optional< basicblock > bb, unsigned pos = 1 )
+        {
+            return bb.has_value() ? bb.value() : *std::next( current_block, pos );
+        }
 
         auto apply( action::alloc a ) &&
         {
@@ -335,8 +344,8 @@ namespace sc
 
         auto apply( action::add a ) &&
         {
-            value l = a.lhs.has_value() ? a.lhs.value() : pop();
-            value r = a.rhs.has_value() ? a.rhs.value() : pop();
+            value l = popvalue( a.lhs );
+            value r = popvalue( a.rhs );
             push( builder->create( build::add{ l, r } ) );
             return std::move(*this);
         }
@@ -349,30 +358,30 @@ namespace sc
 
         auto apply( action::bitcast c ) &&
         {
-            value val = c.val.has_value() ? c.val.value() : pop();
+            value val = popvalue( c.val );
             push( builder->create( build::bitcast{ val, c.to } ) );
             return std::move(*this);
         }
 
         auto apply( action::zfit z ) &&
         {
-            value val = z.val.has_value() ? z.val.value() : pop();
+            value val = popvalue( z.val );
             push( builder->create( build::zfit{ val, z.to } ) );
             return std::move(*this);
         }
 
         auto apply( action::condbr br ) &&
         {
-            value cond = br.cond.has_value() ? br.cond.value() : pop();
-            basicblock thenbb = br.thenbb.has_value() ? br.thenbb.value() : *std::next( current_block );
-            basicblock elsebb = br.elsebb.has_value() ? br.elsebb.value() : *std::next( current_block, 2 );
+            value cond = popvalue( br.cond );
+            basicblock thenbb = popblock( br.thenbb );
+            basicblock elsebb = popblock( br.elsebb, 2 );
             push( builder->create( build::condbr{ cond, thenbb, elsebb } ) );
             return std::move(*this);
         }
 
         auto apply( action::branch br ) &&
         {
-            basicblock dst = br.dst.has_value() ? br.dst.value() : *std::next( current_block );
+            basicblock dst = popblock( br.dst );
             push( builder->create( build::branch{ dst } ) );
             return std::move(*this);
         }
@@ -381,7 +390,7 @@ namespace sc
         {
             values args;
             for ( auto arg : c.args )
-                args.push_back( arg.has_value() ? arg.value() : pop() );
+                args.push_back( popvalue( arg ) );
             push( builder->create( build::call{ c.fn, args } ) );
             return std::move(*this);
         }
@@ -393,7 +402,7 @@ namespace sc
                 assert( !r.val.has_value() );
                 builder->create( build::ret{} );
             } else {
-                value val = r.val.has_value() ? r.val.value() : pop();
+                value val = popvalue( r.val );
                 builder->create( build::ret{ val } );
             }
             blocks.pop_back(); // basic block terminator
