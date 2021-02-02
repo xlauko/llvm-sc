@@ -72,6 +72,12 @@ namespace sc
             type to;
         };
 
+        struct zfit
+        {
+            value val;
+            type to;
+        };
+
         struct condbr
         {
             value cond;
@@ -120,6 +126,12 @@ namespace sc
         using add = detail::binary;
 
         struct bitcast
+        {
+            std::optional< value > val;
+            type to;
+        };
+
+        struct zfit
         {
             std::optional< value > val;
             type to;
@@ -218,6 +230,13 @@ namespace sc
 
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
+        auto zfit( value v, type to )
+        {
+            if ( v->getType() == to )
+                return v;
+            return CreateZExtOrTrunc( v, to );
+        }
+
         auto phi( const std::vector< phi_edge > &edges )
         {
             auto n = static_cast< unsigned >( edges.size() );
@@ -255,6 +274,7 @@ namespace sc
         auto create( build::phi p ) { return phi( p.edges ); }
 
         auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
+        auto create( build::zfit z ) { return zfit( z.val, z.to ); }
 
         auto create( build::condbr b ) { return condbr( b.cond, b.thenbb, b.elsebb ); }
         auto create( build::branch b ) { return br( b.dst ); }
@@ -293,6 +313,7 @@ namespace sc
             return v;
         }
 
+
         auto apply( action::alloc a ) &&
         {
             value var = builder->create( a );
@@ -330,6 +351,13 @@ namespace sc
         {
             value val = c.val.has_value() ? c.val.value() : pop();
             push( builder->create( build::bitcast{ val, c.to } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::zfit z ) &&
+        {
+            value val = z.val.has_value() ? z.val.value() : pop();
+            push( builder->create( build::zfit{ val, z.to } ) );
             return std::move(*this);
         }
 
