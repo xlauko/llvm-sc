@@ -60,6 +60,7 @@ namespace sc
         };
 
         struct add : detail::binary {};
+        struct or_ : detail::binary {};
 
         struct phi
         {
@@ -104,11 +105,6 @@ namespace sc
 
     namespace action
     {
-        namespace detail
-        {
-            struct binary { std::optional< value > lhs, rhs; };
-        } // namespace detail
-
         using alloc = build::alloc;
 
         struct load
@@ -123,7 +119,15 @@ namespace sc
             std::optional< std::string > from_var;
         };
 
-        using add = detail::binary;
+        struct add
+        {
+            std::optional< value > lhs, rhs;
+        };
+
+        struct or_
+        {
+            std::optional< value > lhs, rhs;
+        };
 
         struct bitcast
         {
@@ -154,6 +158,10 @@ namespace sc
 
         struct call
         {
+            call( value _fn, const values &as )
+                : call( function( _fn ), as )
+            {}
+
             call( function _fn, const values &as )
                 : fn( _fn )
             {
@@ -227,6 +235,7 @@ namespace sc
         auto load( value ptr ) { return CreateLoad( ptr ); }
 
         auto add( value l, value r ) { return CreateAdd( l, r ); }
+        auto or_( value l, value r ) { return CreateOr( l, r ); }
 
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
@@ -270,6 +279,7 @@ namespace sc
         }
 
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
+        auto create( build::or_ a ) { return or_( a.lhs, a.rhs ); }
 
         auto create( build::phi p ) { return phi( p.edges ); }
 
@@ -350,6 +360,14 @@ namespace sc
             return std::move(*this);
         }
 
+        auto apply( action::or_ a ) &&
+        {
+            value l = popvalue( a.lhs );
+            value r = popvalue( a.rhs );
+            push( builder->create( build::or_{ l, r } ) );
+            return std::move(*this);
+        }
+
         auto apply( action::phi p ) &&
         {
             push( builder->create( p ) );
@@ -405,7 +423,6 @@ namespace sc
                 value val = popvalue( r.val );
                 builder->create( build::ret{ val } );
             }
-            blocks.pop_back(); // basic block terminator
             return std::move(*this);
         }
 
