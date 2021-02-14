@@ -43,4 +43,7 @@ namespace sc
     ptr_type i32p ( unsigned as = 0 );
     ptr_type i64p ( unsigned as = 0 );
 
+    unsigned bits( type ty );
+    unsigned bytes( type ty );
+
 } // namespace sc
