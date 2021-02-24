@@ -146,6 +146,9 @@ namespace sc
         struct condbr
         {
             explicit condbr( value c ) : cond( c ) {}
+            explicit condbr( value c, basicblock tbb, basicblock ebb )
+                : cond( c ), thenbb( tbb ), elsebb( ebb )
+            {}
 
             std::optional< value > cond;
             std::optional< basicblock > thenbb, elsebb;
@@ -482,6 +485,16 @@ namespace sc
         {
             ins.call( this );
             return std::move( *this );
+        }
+
+        basicblock block( const std::string &name )
+        {
+            auto found_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
+                return block->getName() == name;
+            } );
+
+            assert( found_block != blocks.end() );
+            return *found_block;
         }
 
         std::unique_ptr< builder_t > builder;
