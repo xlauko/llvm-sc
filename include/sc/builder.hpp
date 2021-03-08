@@ -79,6 +79,12 @@ namespace sc
             type to;
         };
 
+        struct fptoui
+        {
+            value val;
+            type to;
+        };
+
         struct condbr
         {
             value cond;
@@ -136,6 +142,12 @@ namespace sc
         };
 
         struct zfit
+        {
+            std::optional< value > val;
+            type to;
+        };
+
+        struct fptoui
         {
             std::optional< value > val;
             type to;
@@ -249,6 +261,13 @@ namespace sc
             return CreateZExtOrTrunc( v, to );
         }
 
+        auto fptoui( value v, type to )
+        {
+            if ( v->getType() == to )
+                return v;
+            return CreateFPToUI( v, to );
+        }
+
         auto phi( const std::vector< phi_edge > &edges )
         {
             auto n = static_cast< unsigned >( edges.size() );
@@ -288,6 +307,7 @@ namespace sc
 
         auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
         auto create( build::zfit z ) { return zfit( z.val, z.to ); }
+        auto create( build::fptoui z ) { return fptoui( z.val, z.to ); }
 
         auto create( build::condbr b ) { return condbr( b.cond, b.thenbb, b.elsebb ); }
         auto create( build::branch b ) { return br( b.dst ); }
@@ -388,6 +408,13 @@ namespace sc
         {
             value val = popvalue( z.val );
             push( builder->create( build::zfit{ val, z.to } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::fptoui z ) &&
+        {
+            value val = popvalue( z.val );
+            push( builder->create( build::fptoui{ val, z.to } ) );
             return std::move(*this);
         }
 
