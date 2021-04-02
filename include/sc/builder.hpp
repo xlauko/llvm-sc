@@ -67,23 +67,19 @@ namespace sc
             std::vector< phi_edge > edges;
         };
 
-        struct bitcast
+        struct cast
         {
+            cast( value v, type t ) : val( v ), to( t ) {}
+
             value val;
             type to;
         };
 
-        struct zfit
-        {
-            value val;
-            type to;
-        };
-
-        struct fptoui
-        {
-            value val;
-            type to;
-        };
+        struct bitcast  : cast { using cast::cast; };
+        struct zfit     : cast { using cast::cast; };
+        struct fptoui   : cast { using cast::cast; };
+        struct ptrtoint : cast { using cast::cast; };
+        struct inttoptr : cast { using cast::cast; };
 
         struct condbr
         {
@@ -135,23 +131,19 @@ namespace sc
             std::optional< value > lhs, rhs;
         };
 
-        struct bitcast
+        struct cast
         {
+            cast( std::optional< value > v, type t ) : val( v ), to( t ) {}
+
             std::optional< value > val;
             type to;
         };
 
-        struct zfit
-        {
-            std::optional< value > val;
-            type to;
-        };
-
-        struct fptoui
-        {
-            std::optional< value > val;
-            type to;
-        };
+        struct bitcast  : cast { using cast::cast; };
+        struct zfit     : cast { using cast::cast; };
+        struct fptoui   : cast { using cast::cast; };
+        struct ptrtoint : cast { using cast::cast; };
+        struct inttoptr : cast { using cast::cast; };
 
         using phi = build::phi;
 
@@ -268,6 +260,9 @@ namespace sc
             return CreateFPToUI( v, to );
         }
 
+        auto ptrtoint( value v, type to ) { return CreatePtrToInt( v, to ); }
+        auto inttoptr( value v, type to ) { return CreateIntToPtr( v, to ); }
+
         auto phi( const std::vector< phi_edge > &edges )
         {
             auto n = static_cast< unsigned >( edges.size() );
@@ -305,9 +300,11 @@ namespace sc
 
         auto create( build::phi p ) { return phi( p.edges ); }
 
-        auto create( build::bitcast c ) { return bitcast( c.val, c.to ); }
-        auto create( build::zfit z ) { return zfit( z.val, z.to ); }
-        auto create( build::fptoui z ) { return fptoui( z.val, z.to ); }
+        auto create( build::bitcast c )  { return bitcast( c.val, c.to ); }
+        auto create( build::zfit z )     { return zfit( z.val, z.to ); }
+        auto create( build::fptoui z )   { return fptoui( z.val, z.to ); }
+        auto create( build::ptrtoint z ) { return ptrtoint( z.val, z.to ); }
+        auto create( build::inttoptr z ) { return inttoptr( z.val, z.to ); }
 
         auto create( build::condbr b ) { return condbr( b.cond, b.thenbb, b.elsebb ); }
         auto create( build::branch b ) { return br( b.dst ); }
@@ -397,26 +394,19 @@ namespace sc
             return std::move(*this);
         }
 
-        auto apply( action::bitcast c ) &&
+        template< typename cast >
+        auto apply_cast( const auto &c )
         {
             value val = popvalue( c.val );
-            push( builder->create( build::bitcast{ val, c.to } ) );
+            push( builder->create( cast( val, c.to ) ) );
             return std::move(*this);
         }
 
-        auto apply( action::zfit z ) &&
-        {
-            value val = popvalue( z.val );
-            push( builder->create( build::zfit{ val, z.to } ) );
-            return std::move(*this);
-        }
-
-        auto apply( action::fptoui z ) &&
-        {
-            value val = popvalue( z.val );
-            push( builder->create( build::fptoui{ val, z.to } ) );
-            return std::move(*this);
-        }
+        auto apply( action::bitcast c )  && { return apply_cast< build::bitcast >( c ); }
+        auto apply( action::zfit c )     && { return apply_cast< build::zfit >( c ); }
+        auto apply( action::fptoui c )   && { return apply_cast< build::fptoui >( c ); }
+        auto apply( action::ptrtoint c ) && { return apply_cast< build::ptrtoint >( c ); }
+        auto apply( action::inttoptr c ) && { return apply_cast< build::inttoptr >( c ); }
 
         auto apply( action::condbr br ) &&
         {
