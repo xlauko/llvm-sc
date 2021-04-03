@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include "init.hpp"
-
 #include <llvm/IR/Module.h>
 #include <llvm/Pass.h>
 
