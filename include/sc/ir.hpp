@@ -49,4 +49,14 @@ namespace sc
         return get_function(v)->getParent();
     }
 
+    inline const llvm::DataLayout& data_layout( llvm::Module *m )
+    {
+        return m->getDataLayout();
+    }
+
+    inline const llvm::DataLayout& data_layout( llvm::Value *v )
+    {
+        return get_module( v )->getDataLayout();
+    }
+
 } // namespace sc
