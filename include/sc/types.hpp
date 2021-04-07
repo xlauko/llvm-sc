@@ -17,12 +17,17 @@
 #pragma once
 
 #include <llvm/IR/Type.h>
+#include <llvm/IR/DataLayout.h>
+
+#include <sc/ir.hpp>
 
 namespace sc
 {
     using type     = llvm::Type *;
+    using value    = llvm::Value *;
     using int_type = llvm::IntegerType *;
     using ptr_type = llvm::PointerType *;
+    using data_layout_t = llvm::DataLayout;
 
     type void_t();
 
@@ -43,7 +48,10 @@ namespace sc
     ptr_type i32p ( unsigned as = 0 );
     ptr_type i64p ( unsigned as = 0 );
 
-    unsigned bits( type ty );
-    unsigned bytes( type ty );
+    unsigned bits ( type ty, const data_layout_t &dl );
+    unsigned bytes( type ty, const data_layout_t &dl );
+    
+    unsigned bits ( value v );
+    unsigned bytes( value v );
 
 } // namespace sc

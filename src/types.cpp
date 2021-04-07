@@ -45,14 +45,24 @@ namespace sc
     ptr_type i32p  ( unsigned as ) { return Type::getInt32PtrTy( context(), as ); }
     ptr_type i64p  ( unsigned as ) { return Type::getInt64PtrTy( context(), as ); }
 
-    unsigned bits( type ty )
+    unsigned bits( type ty, const data_layout_t &dl )
     {
-        return ty->getScalarSizeInBits();
+        return unsigned( dl.getTypeSizeInBits( ty ).getFixedSize() );
     }
 
-    unsigned bytes( type ty )
+    unsigned bytes( type ty, const data_layout_t &dl )
     {
-        return ( bits( ty ) + 7 ) / 8;
+        return ( bits( ty, dl ) + 7 ) / 8;
+    }
+
+    unsigned bits( value v )
+    {
+        return bits( v->getType(), data_layout( v ) );
+    }
+
+    unsigned bytes( value v )
+    {
+        return bytes( v->getType(), data_layout( v ) );
     }
 
 } // namespace sc
