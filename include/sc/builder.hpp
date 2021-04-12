@@ -427,8 +427,17 @@ namespace sc
         auto apply( const action::call &c ) &&
         {
             values args;
-            for ( auto arg : c.args )
-                args.push_back( popvalue( arg ) );
+            
+            unsigned idx = 0;
+            for ( auto arg : c.args ) {
+                auto a = popvalue( arg );
+                auto to = c.fn->getArg( idx++ )->getType();
+                if ( to != a->getType() ) {
+                    a = builder->create( build::bitcast( a, to ) );
+                }
+                args.push_back( a );
+            }
+    
             push( builder->create( build::call{ c.fn, args } ) );
             return std::move(*this);
         }
