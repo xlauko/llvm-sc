@@ -424,6 +424,21 @@ namespace sc
             return std::move(*this);
         }
 
+        auto function_argument_type( function fn, unsigned idx )
+        {
+            using function_type = llvm::FunctionType;
+            
+            function_type *fntype = [fn] {
+                if ( fn->getType()->isPointerTy() )
+                    return llvm::cast< function_type > (
+                        fn->getType()->getPointerElementType()
+                    );
+                return fn->getFunctionType();
+            } ();
+
+            return fntype->getParamType( idx );
+        }
+
         auto apply( const action::call &c ) &&
         {
             values args;
@@ -431,10 +446,11 @@ namespace sc
             unsigned idx = 0;
             for ( auto arg : c.args ) {
                 auto a = popvalue( arg );
-                auto to = c.fn->getArg( idx++ )->getType();
+                auto to = function_argument_type( c.fn, idx++ );
                 if ( to != a->getType() ) {
                     a = builder->create( build::bitcast( a, to ) );
                 }
+
                 args.push_back( a );
             }
     
