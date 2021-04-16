@@ -37,7 +37,6 @@ include( cmake/prevent_in_source_builds.cmake )
 
 add_library( sc_project_options INTERFACE )
 target_compile_features( sc_project_options INTERFACE cxx_std_20 )
-target_compile_options( sc_project_options INTERFACE "-fcoroutines" )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" )
     option( ENABLE_BUILD_WITH_TIME_TRACE
@@ -76,6 +75,9 @@ if ( ENABLE_PCH )
     )
 endif()
 
+find_package( range-v3 REQUIRED )
+find_package( cppcoro CONFIG REQUIRED )
+
 add_library( llvmsc
     src/annotation.cpp
     src/constant.cpp
@@ -88,7 +90,19 @@ add_library( llvmsc
 set_property(TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
-target_link_libraries( llvmsc PRIVATE sc_project_options sc_project_warnings )
+target_link_libraries( llvmsc 
+    PRIVATE
+        sc_project_options
+        sc_project_warnings
+
+        cppcoro
+
+        range-v3
+        range-v3-meta
+        range-v3::meta
+        range-v3-concepts
+)
+
 set_target_properties( llvmsc PROPERTIES CXX_EXTENSIONS OFF )
 
 target_include_directories( llvmsc
