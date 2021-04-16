@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include <sc/init.hpp>
 #include <sc/constant.hpp>

@@ -1,9 +1,16 @@
 include( CTest )
 
+find_package( Catch2 CONFIG REQUIRED )
+
 add_executable( llvmsc-tests )
 
 add_library( catch_main STATIC src/main.cpp )
-target_link_libraries( catch_main PRIVATE sc_project_options )
+target_link_libraries( catch_main 
+    PRIVATE
+        sc_project_options
+    PUBLIC
+        Catch2::Catch2
+)
 
 target_include_directories( catch_main
     PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
