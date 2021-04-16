@@ -21,6 +21,8 @@
 #include <sc/types.hpp>
 #include <vector>
 
+#include <range/v3/algorithm.hpp>
+
 namespace sc
 {
     using value = llvm::Value *;
@@ -376,7 +378,7 @@ namespace sc
         {
             value l = popvalue( a.lhs );
             value r = popvalue( a.rhs );
-            push( builder->create( build::add{ l, r } ) );
+            push( builder->create( build::add{{ l, r }} ) );
             return std::move(*this);
         }
 
@@ -384,7 +386,7 @@ namespace sc
         {
             value l = popvalue( a.lhs );
             value r = popvalue( a.rhs );
-            push( builder->create( build::or_{ l, r } ) );
+            push( builder->create( build::or_{{ l, r }} ) );
             return std::move(*this);
         }
 
@@ -491,7 +493,7 @@ namespace sc
 
         auto apply( action::set_block set ) &&
         {
-            current_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
+            current_block = ranges::find_if( blocks, [&] ( const auto &block ) {
                 return block->getName() == set.name;
             } );
 
@@ -531,7 +533,7 @@ namespace sc
 
         basicblock block( const std::string &name )
         {
-            auto found_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
+            auto found_block = ranges::find_if( blocks, [&] ( const auto &block ) {
                 return block->getName() == name;
             } );
 
