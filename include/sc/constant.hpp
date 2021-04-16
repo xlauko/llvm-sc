@@ -41,7 +41,7 @@ namespace sc
 
     inline auto null( ptr_type t ) { return llvm::ConstantPointerNull::get( t ); }
 
-    inline auto iv( std::integral auto v ) { return i_( v ); }
+    inline auto iv( /* std::integral */ auto v ) { return i_( v ); }
 
     using apint = llvm::APInt;
 
