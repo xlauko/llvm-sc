@@ -20,14 +20,16 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/CallSite.h>
 
-#include <ranges>
+#include <range/v3/view/join.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/transform.hpp>
 
 namespace sc::views
 {
     template< typename F >
-    auto map( F &&f ) { return std::views::transform( std::forward< F >( f ) ); }
+    auto map( F &&f ) { return ranges::views::transform( std::forward< F >( f ) ); }
 
-    static const auto flatten = std::views::join;
+    static const auto flatten = ranges::views::join;
 
     static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
     static const auto pointers = map(pointer);
@@ -38,16 +40,16 @@ namespace sc::views
     static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
 
     template< typename R >
-    using frozen = std::vector< std::ranges::range_value_t< R > >;
+    using frozen = std::vector< ranges::range_value_t< R > >;
 
-    inline auto freeze( std::ranges::range auto r ) -> frozen< decltype(r) >
+    inline auto freeze( ranges::range auto r ) -> frozen< decltype(r) >
     {
         frozen< decltype(r) > v;
-        if constexpr( std::ranges::sized_range< decltype(r) > ) {
-            v.reserve( std::ranges::size(r) );
+        if constexpr( ranges::sized_range< decltype(r) > ) {
+            v.reserve( ranges::size(r) );
         }
 
-        std::ranges::copy( r, std::back_inserter(v) );
+        ranges::copy( r, std::back_inserter(v) );
         return v;
     }
 
@@ -119,7 +121,7 @@ namespace sc::views
     auto filter( LLVM &ll )
     {
         auto r = freeze( sc::views::instructions( ll ) ); // FIXME get rid of one copy
-        return freeze( r | std::views::filter( is< T > ) | mapcast< T > );
+        return freeze( r | ranges::views::filter( is< T > ) | mapcast< T > );
     }
 
 } // namespace sc::views
