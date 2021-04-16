@@ -1,5 +1,10 @@
 cmake_minimum_required( VERSION 3.16 )
 
+if ( DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE )
+  set( CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      CACHE STRING "" )
+endif()
+
 set( SC_VERSION_MAJOR 0 )
 set( SC_VERSION_MINOR 1 )
 set( SC_VERSION_PATCH 0 )
