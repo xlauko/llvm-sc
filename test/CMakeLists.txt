@@ -1,5 +1,3 @@
-include( CTest )
-
 find_package( Catch2 CONFIG REQUIRED )
 
 add_executable( llvmsc-tests )
@@ -41,4 +39,6 @@ if( NOT LLVM_ENABLE_RTTI )
   set_target_properties( llvmsc-tests PROPERTIES COMPILE_FLAGS "-fno-rtti" )
 endif()
 
-add_test( NAME llvmsc-tests COMMAND llvmsc-tests )
+include( CTest )
+include( Catch )
+catch_discover_tests( llvmsc-tests )
