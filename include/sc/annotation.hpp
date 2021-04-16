@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include <coroutine>
-#include <external/coro/generator.hpp>
+#include <cppcoro/generator.hpp>
 #include <llvm/IR/Module.h>
 #include <sc/transformer.hpp>
 #include <string_view>
