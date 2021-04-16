@@ -20,9 +20,12 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/CallSite.h>
 
+#include <range/v3/core.hpp>
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/algorithm/copy.hpp>
+#include <range/v3/range/conversion.hpp>
 
 namespace sc::views
 {
@@ -39,19 +42,13 @@ namespace sc::views
 
     static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
 
-    template< typename R >
-    using frozen = std::vector< ranges::range_value_t< R > >;
+    // template< typename R >
+    // using frozen = std::vector< ranges::range_value_t< R > >;
 
-    inline auto freeze( ranges::range auto r ) -> frozen< decltype(r) >
+    /*inline auto freeze( auto r )
     {
-        frozen< decltype(r) > v;
-        if constexpr( ranges::sized_range< decltype(r) > ) {
-            v.reserve( ranges::size(r) );
-        }
-
-        ranges::copy( r, std::back_inserter(v) );
-        return v;
-    }
+        return ranges::to<std::vector>(r);
+    }*/
 
     template< typename T >
     struct IsClosure {
@@ -120,8 +117,9 @@ namespace sc::views
     template< typename T, typename LLVM >
     auto filter( LLVM &ll )
     {
-        auto r = freeze( sc::views::instructions( ll ) ); // FIXME get rid of one copy
-        return freeze( r | ranges::views::filter( is< T > ) | mapcast< T > );
+        return sc::views::instructions( ll ) 
+            | ranges::views::filter( [] ( auto v ) { return llvm::isa< T >( v ); } )
+            | ranges::views::transform( [] ( auto v ) { return llvm::cast< T >( v ); } );
     }
 
 } // namespace sc::views
