@@ -167,11 +167,11 @@ namespace sc
 
         struct call
         {
-            call( value _fn, const values &as )
+            call( value _fn, const std::span< value > &as )
                 : call( function( _fn ), as )
             {}
 
-            call( function _fn, const values &as )
+            call( function _fn, const std::span< value > &as )
                 : fn( _fn )
             {
                 for ( auto arg : as )
