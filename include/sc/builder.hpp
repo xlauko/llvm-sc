@@ -205,7 +205,7 @@ namespace sc
         struct condbr
         {
             explicit condbr( value c ) : cond( c ) {}
-            explicit condbr( value c, basicblock tbb, basicblock ebb )
+            explicit condbr( std::optional< value > c, basicblock tbb, basicblock ebb )
                 : cond( c ), thenbb( tbb ), elsebb( ebb )
             {}
 
