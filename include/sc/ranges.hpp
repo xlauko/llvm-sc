@@ -32,6 +32,12 @@ namespace sc::views
     template< typename... Ts > struct overloaded : Ts... { using Ts::operator()...; };
     template< typename... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
+    using llvmmodule = llvm::Module;
+    using function   = llvm::Function;
+    using basicblock = llvm::BasicBlock;
+
+    using rview = ranges::views;
+
     template< typename T >
     auto is = overloaded {
         []( auto  *v ) { return llvm::isa< T >(  v ); },
@@ -54,6 +60,30 @@ namespace sc::views
     auto cast = overloaded {
         []( auto  *v ) { return llvm::cast< T >(  v ); },
         []( auto &&v ) { return llvm::cast< T >( &v ); }
+    };
+
+    static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
+
+    // map
+    static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
+    static const auto pointers = rview::transform( pointer );
+
+    // filter
+
+    // instructions
+    static const auto instructions = overloaded {
+        []( basicblock *bb ) { return *bb | pointers; },
+        []( basicblock &bb ) { return  bb | pointers; },
+        []( function   *fn ) { return *fn | rview::join | pointers; },
+        []( function   &fn ) { return  fn | rview::join | pointers; },
+        []( llvmmodule  *m ) { return  *m | rview::join | rview::join | pointers; },
+        []( llvmmodule  &m ) { return   m | rview::join | rview::join | pointers; },
+    };
+
+    // basicblocks
+    static const auto basicblocks = overloaded {
+        []( function *fn ) { return ranges::views::all(*fn); },
+        []( function &fn ) { return ranges::views::all(fn); }
     };
 
 } // namespace sc::views
