@@ -5,7 +5,7 @@
 
 namespace sc
 {
-    llvm::Module *empty_module()
+    inline llvm::Module *empty_module()
     {
         assert( sc::context_ptr() );
         return new llvm::Module( "empty", sc::context() );
