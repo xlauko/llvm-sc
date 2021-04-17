@@ -29,97 +29,19 @@
 
 namespace sc::views
 {
-    template< typename F >
-    auto map( F &&f ) { return ranges::views::transform( std::forward< F >( f ) ); }
-
-    static const auto flatten = ranges::views::join;
-
-    static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
-    static const auto pointers = map(pointer);
-
-    static auto type = [] ( const auto &val ) { return val->getType(); };
-    static auto types = map(type);
-
-    static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
-
-    // template< typename R >
-    // using frozen = std::vector< ranges::range_value_t< R > >;
-
-    /*inline auto freeze( auto r )
-    {
-        return ranges::to<std::vector>(r);
-    }*/
+    template< typename... Ts > struct overloaded : Ts... { using Ts::operator()...; };
+    template< typename... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
     template< typename T >
-    struct IsClosure {
-        template< typename F >
-        bool operator()( F *v ) const { return llvm::isa< T >( v ); }
-        template< typename F >
-        bool operator()( F &v ) const { return llvm::isa< T >( &v ); }
+    auto is = overloaded {
+        []( auto *v )  { return llvm::isa< T >(  v ); },
+        []( auto &&v ) { return llvm::isa< T >( &v ); }
     };
-
+    
     template< typename T >
-    struct IsNotClosure {
-        template< typename F >
-        bool operator()( F *v ) const { return !llvm::isa< T >( v ); }
-        template< typename F >
-        bool operator()( F &v ) const { return !llvm::isa< T >( &v ); }
+    auto isnot = overloaded {
+        []( auto *v )  { return !llvm::isa< T >(  v ); },
+        []( auto &&v ) { return !llvm::isa< T >( &v ); }
     };
-
-    template< typename T > const IsClosure< T > is;
-    template< typename T > const IsNotClosure< T > isnot;
-
-    struct IsCallClosure
-    {
-        template< typename F >
-        bool operator()( F *v ) const { return static_cast< bool >( llvm::CallSite{ v } ); }
-        template< typename F >
-        bool operator()( F &v ) const { return static_cast< bool >( llvm::CallSite{ &v } ); }
-    };
-
-    static const IsCallClosure is_call;
-
-    template< typename T >
-    struct DynCastClosure {
-        template< typename F >
-        T *operator()( F *f ) const { return llvm::dyn_cast< T >( f ); }
-        template< typename F >
-        T *operator()( F &f ) const { return llvm::dyn_cast< T >( &f ); }
-    };
-
-    template< typename T >
-    struct CastClosure {
-        template< typename F >
-        T *operator()( F *f ) { return llvm::cast< T >( f ); }
-        template< typename F >
-        T *operator()( F &f ) { return llvm::cast< T >( &f ); }
-    };
-
-    template< typename T > const DynCastClosure< T > llvmdyncast;
-    template< typename T > const CastClosure< T > llvmcast;
-
-    template< typename T >
-    static auto mapdyncast = map( llvmdyncast< T > );
-
-    template< typename T >
-    static auto mapcast = map( llvmcast< T > );
-
-    inline auto instructions( llvm::Module &m )
-    {
-        return m | map( flatten ) | flatten | pointers;
-    }
-
-    inline auto instructions( llvm::Function &f )
-    {
-        return f | flatten | pointers;
-    }
-
-    template< typename T, typename LLVM >
-    auto filter( LLVM &ll )
-    {
-        return sc::views::instructions( ll ) 
-            | ranges::views::filter( [] ( auto v ) { return llvm::isa< T >( v ); } )
-            | ranges::views::transform( [] ( auto v ) { return llvm::cast< T >( v ); } );
-    }
 
 } // namespace sc::views
