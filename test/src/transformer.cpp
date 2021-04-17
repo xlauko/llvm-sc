@@ -15,7 +15,7 @@ TEST_CASE( "transformer" )
     {
         using namespace sc::literals;
 
-        auto i = b.add( 10_i8, 5_i8 );
+        auto i = b.bin< sc::binop::Add >( 10_i8, 5_i8 );
         REQUIRE( llvm::isa< llvm::Constant >( i ) );
     }
 }

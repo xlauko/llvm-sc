@@ -32,6 +32,7 @@ namespace sc
     using function = llvm::Function *;
 
     using predicate = llvm::CmpInst::Predicate;
+    using binop = llvm::Instruction::BinaryOps;
 
     struct phi_edge
     {
@@ -45,7 +46,6 @@ namespace sc
     {
         namespace detail
         {
-            struct binary { value lhs, rhs; };
         } // namespace detail
 
         struct alloc
@@ -63,15 +63,11 @@ namespace sc
             value ptr;
         };
 
-        struct add : detail::binary {};
-        struct or_ : detail::binary {};
+        template< binop op >
+        struct bin { value lhs, rhs; };
         
-        template< predicate _pred >
-        struct cmp
-        {
-            static constexpr predicate pred = _pred;
-            value lhs, rhs; 
-        };
+        template< predicate pred >
+        struct cmp { value lhs, rhs; };
 
         struct phi
         {
@@ -132,20 +128,18 @@ namespace sc
             std::optional< std::string > from_var;
         };
 
-        struct add
+        template< binop op >
+        struct bin
         {
             std::optional< value > lhs, rhs;
         };
 
-        struct or_
-        {
-            std::optional< value > lhs, rhs;
-        };
+        using add = bin< binop::Add >;
+        using or_ = bin< binop::Or >;
 
-        template< predicate _pred >
+        template< predicate pred >
         struct cmp
         {
-            static constexpr predicate pred = _pred;
             std::optional< value > lhs, rhs;
         };
         
@@ -262,9 +256,9 @@ namespace sc
         auto load( type ty, value ptr ) { return CreateLoad( ty, ptr ); }
         auto load( value ptr ) { return CreateLoad( ptr ); }
 
-        auto add( value l, value r ) { return CreateAdd( l, r ); }
-        auto or_( value l, value r ) { return CreateOr( l, r ); }
-
+        template< binop op >
+        auto bin( value l, value r ) { return CreateBinOp( op, l, r ); }
+        
         template< predicate pred >
         auto cmp( value l, value r )
         {
@@ -324,8 +318,8 @@ namespace sc
             return load( l.ptr );
         }
 
-        auto create( build::add a ) { return add( a.lhs, a.rhs ); }
-        auto create( build::or_ a ) { return or_( a.lhs, a.rhs ); }
+        template< binop op >
+        auto create( build::bin< op > a ) { return bin< op >( a.lhs, a.rhs ); }
 
         template< predicate pred >
         auto create( build::cmp< pred > c ) { return cmp< pred >( c.lhs, c.rhs ); }
@@ -404,19 +398,13 @@ namespace sc
             return std::move(*this);
         }
 
-        auto apply( action::add a ) &&
+        template< binop op >
+        auto apply( action::bin< op > a ) &&
         {
+            using bin = build::bin< op >;
             value l = popvalue( a.lhs );
             value r = popvalue( a.rhs );
-            push( builder->create( build::add{{ l, r }} ) );
-            return std::move(*this);
-        }
-
-        auto apply( action::or_ a ) &&
-        {
-            value l = popvalue( a.lhs );
-            value r = popvalue( a.rhs );
-            push( builder->create( build::or_{{ l, r }} ) );
+            push( builder->create( bin{ l, r } ) );
             return std::move(*this);
         }
 
