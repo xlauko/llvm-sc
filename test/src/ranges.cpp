@@ -31,3 +31,31 @@ TEST_CASE( "is", "[closures]" )
         REQUIRE( sc::views::isnot< instruction >( *con ) );
     }
 }
+
+TEST_CASE( "cast", "[closures]" )
+{
+    using instruction = llvm::Instruction;
+    using binary = llvm::BinaryOperator;
+    using constant = llvm::Constant;
+
+    sc::context_t ctx;
+    sc::init( ctx );
+
+    auto bld = sc::stack_builder()
+            | sc::action::module{ sc::empty_module() }
+            | sc::action::create_function{ "dummy", sc::void_t(), {} }
+            | sc::action::create_block{ "entry" };
+    
+    auto add = bld
+            | sc::action::alloc( sc::i8(), "a" )
+            | sc::action::alloc( sc::i8(), "b" )
+            | sc::action::load( "b" )
+            | sc::action::load( "a" )
+            | sc::action::add()
+            | sc::action::last();
+
+    REQUIRE( sc::views::cast< instruction >( add ) );
+    REQUIRE( sc::views::cast< binary >( add ) );
+    REQUIRE( sc::views::dyncast< instruction >( add ) );
+    REQUIRE( !sc::views::dyncast< constant >( add ) );
+}

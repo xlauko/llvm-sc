@@ -47,7 +47,7 @@ namespace sc::views
     template< typename T >
     auto dyncast = overloaded {
         []( auto  *v ) { return llvm::dyn_cast< T >(  v ); },
-        []( auto &&v ) { return llvm::cyn_cast< T >( &v ); }
+        []( auto &&v ) { return llvm::dyn_cast< T >( &v ); }
     };
     
     template< typename T >
