@@ -31,6 +31,8 @@ namespace sc
     using basicblock = llvm::BasicBlock *;
     using function = llvm::Function *;
 
+    using predicate = llvm::CmpInst::Predicate;
+
     struct phi_edge
     {
         value val;
@@ -63,6 +65,13 @@ namespace sc
 
         struct add : detail::binary {};
         struct or_ : detail::binary {};
+        
+        template< predicate _pred >
+        struct cmp
+        {
+            static constexpr predicate pred = _pred;
+            value lhs, rhs; 
+        };
 
         struct phi
         {
@@ -132,6 +141,16 @@ namespace sc
         {
             std::optional< value > lhs, rhs;
         };
+
+        template< predicate _pred >
+        struct cmp
+        {
+            static constexpr predicate pred = _pred;
+            std::optional< value > lhs, rhs;
+        };
+        
+        using ne = cmp< predicate::ICMP_NE >;
+        using ugt = cmp< predicate::ICMP_UGT >;
 
         struct cast
         {
@@ -246,6 +265,14 @@ namespace sc
         auto add( value l, value r ) { return CreateAdd( l, r ); }
         auto or_( value l, value r ) { return CreateOr( l, r ); }
 
+        template< predicate pred >
+        auto cmp( value l, value r )
+        {
+            return llvm::CmpInst::isFPPredicate( pred )
+               ? CreateFCmp( pred, l, r )
+               : CreateICmp( pred, l, r );
+        }
+
         auto bitcast( value v, type to ) { return CreateBitCast( v, to ); }
 
         auto zfit( value v, type to )
@@ -299,6 +326,9 @@ namespace sc
 
         auto create( build::add a ) { return add( a.lhs, a.rhs ); }
         auto create( build::or_ a ) { return or_( a.lhs, a.rhs ); }
+
+        template< predicate pred >
+        auto create( build::cmp< pred > c ) { return cmp< pred >( c.lhs, c.rhs ); }
 
         auto create( build::phi p ) { return phi( p.edges ); }
 
@@ -387,6 +417,16 @@ namespace sc
             value l = popvalue( a.lhs );
             value r = popvalue( a.rhs );
             push( builder->create( build::or_{{ l, r }} ) );
+            return std::move(*this);
+        }
+
+        template< predicate pred >
+        auto apply( action::cmp< pred > c )
+        {
+            using cmp = build::cmp< pred >;
+            value l = popvalue( c.lhs );
+            value r = popvalue( c.rhs );
+            push( builder->create( cmp{ l, r } ) );
             return std::move(*this);
         }
 
