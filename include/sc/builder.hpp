@@ -134,9 +134,26 @@ namespace sc
             std::optional< value > lhs, rhs;
         };
 
-        using add = bin< binop::Add >;
-        using or_ = bin< binop::Or >;
+        using add  = bin< binop::Add >;
+        using fadd = bin< binop::FAdd >;
+        using sub  = bin< binop::Sub >;
+        using fsub = bin< binop::FSub >;
+        using mul  = bin< binop::Mul >;
+        using fmul = bin< binop::FMul >;
+        using udiv = bin< binop::UDiv >;
+        using sdiv = bin< binop::SDiv >;
+        using fdiv = bin< binop::FDiv >;
+        using urem = bin< binop::URem >;
+        using srem = bin< binop::SRem >;
+        using frem = bin< binop::FRem >;
 
+        using shl  = bin< binop::Shl >;
+        using lshr = bin< binop::LShr >;
+        using ashr = bin< binop::AShr >;
+        using and_ = bin< binop::And >;
+        using or_  = bin< binop::Or >;
+        using xor_ = bin< binop::Xor >;
+        
         template< predicate pred >
         struct cmp
         {
