@@ -18,8 +18,6 @@
 
 #include <llvm/IR/Constants.h>
 
-#include <concepts>
-
 #include <sc/types.hpp>
 
 namespace sc
