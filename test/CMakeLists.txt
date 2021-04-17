@@ -22,6 +22,7 @@ target_sources( llvmsc-tests
         src/constant.cpp
         src/annotation.cpp
         src/transformer.cpp
+        src/ranges.cpp
 )
 
 target_link_libraries( llvmsc-tests
