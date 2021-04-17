@@ -160,8 +160,31 @@ namespace sc
             std::optional< value > lhs, rhs;
         };
         
-        using ne = cmp< predicate::ICMP_NE >;
+        using oeq = cmp< predicate::FCMP_OEQ >;
+        using ogt = cmp< predicate::FCMP_OGT >;
+        using oge = cmp< predicate::FCMP_OGE >;
+        using olt = cmp< predicate::FCMP_OLT >;
+        using ole = cmp< predicate::FCMP_OLE >;
+        using one = cmp< predicate::FCMP_ONE >;
+        using ord = cmp< predicate::FCMP_ORD >;
+        using uno = cmp< predicate::FCMP_UNO >;
+        using fueq = cmp< predicate::FCMP_UEQ >;
+        using fugt = cmp< predicate::FCMP_UGT >;
+        using fuge = cmp< predicate::FCMP_UGE >;
+        using fult = cmp< predicate::FCMP_ULT >;
+        using fule = cmp< predicate::FCMP_ULE >;
+        using fune = cmp< predicate::FCMP_UNE >;
+
+        using eq  = cmp< predicate::ICMP_EQ >;
+        using ne  = cmp< predicate::ICMP_NE >;
         using ugt = cmp< predicate::ICMP_UGT >;
+        using uge = cmp< predicate::ICMP_UGE >;
+        using ult = cmp< predicate::ICMP_ULT >;
+        using ule = cmp< predicate::ICMP_ULE >;
+        using sgt = cmp< predicate::ICMP_SGT >;
+        using sge = cmp< predicate::ICMP_SGE >;
+        using slt = cmp< predicate::ICMP_SLT >;
+        using sle = cmp< predicate::ICMP_SLE >;
 
         struct cast
         {
