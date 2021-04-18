@@ -77,8 +77,8 @@ namespace sc::views
 
     // filter
     template< typename T >
-    static const auto filter = mapdyncast< T > | ranges::views::filter( notnull );
-
+    static const auto filter_range = mapdyncast< T > | ranges::views::filter( notnull );
+    
     static const auto instructions = overloaded {
         []( basicblock *bb ) { return *bb | pointers; },
         []( basicblock &bb ) { return  bb | pointers; },
@@ -92,5 +92,11 @@ namespace sc::views
         []( function *fn ) { return ranges::views::all(*fn); },
         []( function &fn ) { return ranges::views::all( fn); }
     };
+
+    template< typename T >
+    auto filter( auto llvm ) {
+        return instructions( llvm ) | filter_range< T >;
+    }
+
 
 } // namespace sc::views

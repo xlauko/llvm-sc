@@ -131,6 +131,6 @@ TEST_CASE( "llvm views", "[ranges]" )
         REQUIRE( ranges::all_of( loads | sc::views::types, isi8 ) );
 
         using bin = llvm::BinaryOperator;
-        REQUIRE( ranges::distance(  insts | sc::views::filter< bin > ) == 3 ); 
+        REQUIRE( ranges::distance( sc::views::filter< bin >( m ) ) == 3 ); 
     }
 }
