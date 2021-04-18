@@ -75,6 +75,10 @@ namespace sc::views
     template< typename T >
     static auto mapcast = ranges::views::transform( cast< T > );
 
+    // filter
+    template< typename T >
+    static const auto filter = mapdyncast< T > | ranges::views::filter( notnull );
+
     static const auto instructions = overloaded {
         []( basicblock *bb ) { return *bb | pointers; },
         []( basicblock &bb ) { return  bb | pointers; },
