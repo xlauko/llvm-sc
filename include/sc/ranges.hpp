@@ -94,7 +94,7 @@ namespace sc::views
     };
 
     template< typename T >
-    auto filter( auto llvm ) {
+    auto filter( auto &llvm ) {
         return instructions( llvm ) | filter_range< T >;
     }
 

@@ -132,5 +132,6 @@ TEST_CASE( "llvm views", "[ranges]" )
 
         using bin = llvm::BinaryOperator;
         REQUIRE( ranges::distance( sc::views::filter< bin >( m ) ) == 3 ); 
+        REQUIRE( ranges::distance( sc::views::filter< bin >( *m ) ) == 3 ); 
     }
 }
