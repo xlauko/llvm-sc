@@ -36,8 +36,6 @@ namespace sc::views
     using function   = llvm::Function;
     using basicblock = llvm::BasicBlock;
 
-    using rview = ranges::views;
-
     template< typename T >
     auto is = overloaded {
         []( auto  *v ) { return llvm::isa< T >(  v ); },
@@ -63,27 +61,32 @@ namespace sc::views
     };
 
     static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
+    static const auto type = [] ( auto *val ) { return val->getType(); };
 
     // map
     static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
-    static const auto pointers = rview::transform( pointer );
+    static const auto pointers = ranges::views::transform( pointer );
+    
+    static const auto types = ranges::views::transform( type );
 
-    // filter
+    template< typename T >
+    static const auto mapdyncast = ranges::views::transform( dyncast< T > );
 
-    // instructions
+    template< typename T >
+    static auto mapcast = ranges::views::transform( cast< T > );
+
     static const auto instructions = overloaded {
         []( basicblock *bb ) { return *bb | pointers; },
         []( basicblock &bb ) { return  bb | pointers; },
-        []( function   *fn ) { return *fn | rview::join | pointers; },
-        []( function   &fn ) { return  fn | rview::join | pointers; },
-        []( llvmmodule  *m ) { return  *m | rview::join | rview::join | pointers; },
-        []( llvmmodule  &m ) { return   m | rview::join | rview::join | pointers; },
+        []( function   *fn ) { return *fn | ranges::views::join | pointers; },
+        []( function   &fn ) { return  fn | ranges::views::join | pointers; },
+        []( llvmmodule  *m ) { return  *m | ranges::views::join | ranges::views::join | pointers; },
+        []( llvmmodule  &m ) { return   m | ranges::views::join | ranges::views::join | pointers; },
     };
 
-    // basicblocks
     static const auto basicblocks = overloaded {
         []( function *fn ) { return ranges::views::all(*fn); },
-        []( function &fn ) { return ranges::views::all(fn); }
+        []( function &fn ) { return ranges::views::all( fn); }
     };
 
 } // namespace sc::views
