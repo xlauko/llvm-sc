@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <cppcoro/generator.hpp>
+#include <sc/generator.hpp>
 #include <llvm/IR/Module.h>
 #include <sc/transformer.hpp>
 #include <string_view>
@@ -68,8 +68,6 @@ namespace sc
         bool operator==( const annotation & ) const = default;
 
         parts_t _parts;
-
-        template< typename T > using generator = cppcoro::generator< T >;
 
         template< typename Value >
         static generator< annotated< Value > > enumerate( llvm::Module &m );

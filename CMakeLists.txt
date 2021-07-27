@@ -22,29 +22,19 @@ project( llvm-sc
     VERSION 0.1.0
 )
 
-project( lart
-    VERSION ${PACKAGE_VERSION}
-    LANGUAGES CXX
-	DESCRIPTION "LLVM Single Context Library"
-    HOMEPAGE_URL "https://github.com/xlauko/llvm-sc"
-)
-
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" )
-set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++abi" )
-
 include( cmake/project_settings.cmake )
 include( cmake/prevent_in_source_builds.cmake )
 
 add_library( sc_project_options INTERFACE )
 target_compile_features( sc_project_options INTERFACE cxx_std_20 )
 
-if ( CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" )
-    option( ENABLE_BUILD_WITH_TIME_TRACE
-        "Enable -ftime-trace to generate time tracing .json files on clang" OFF )
-    if ( ENABLE_BUILD_WITH_TIME_TRACE )
-        add_compile_definitions( sc_project_options INTERFACE -ftime-trace )
-    endif()
-endif()
+# if ( CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" )
+#     option( ENABLE_BUILD_WITH_TIME_TRACE
+#         "Enable -ftime-trace to generate time tracing .json files on clang" OFF )
+#     if ( ENABLE_BUILD_WITH_TIME_TRACE )
+#         add_compile_definitions( sc_project_options INTERFACE -ftime-trace )
+#     endif()
+# endif()
 
 add_library( sc_project_warnings INTERFACE )
 
@@ -75,9 +65,6 @@ if ( ENABLE_PCH )
     )
 endif()
 
-find_package( range-v3 REQUIRED )
-find_package( cppcoro CONFIG REQUIRED )
-
 add_library( llvmsc
     src/annotation.cpp
     src/constant.cpp
@@ -87,20 +74,18 @@ add_library( llvmsc
     src/types.cpp
 )
 
+set_target_properties( llvmsc PROPERTIES
+  COMPILE_FLAGS "-fcoroutines"
+)
+
+
 set_property(TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
-target_link_libraries( llvmsc 
+target_link_libraries( llvmsc
     PRIVATE
         sc_project_options
         sc_project_warnings
-
-        cppcoro
-
-        range-v3
-        range-v3-meta
-        range-v3::meta
-        range-v3-concepts
 )
 
 set_target_properties( llvmsc PROPERTIES CXX_EXTENSIONS OFF )
@@ -137,7 +122,19 @@ endif()
 # find_package can locate it)
 list( APPEND CMAKE_PREFIX_PATH "${LLVM_INSTALL_DIR}/lib/cmake/llvm/" )
 
-find_package( LLVM REQUIRED CONFIG )
+set (llvm_search_paths
+  ${LLVM_INSTALL_DIR}
+  ${LLVM_INSTALL_DIR}/lib/cmake
+  ${LLVM_INSTALL_DIR}/lib/cmake/llvm
+  ${LLVM_INSTALL_DIR}/lib/cmake/clang
+  ${LLVM_INSTALL_DIR}/share/clang/cmake/
+  ${LLVM_INSTALL_DIR}/share/llvm/cmake/
+)
+
+find_package( LLVM REQUIRED CONFIG
+    PATHS ${llvm_search_paths}
+    NO_DEFAULT_PATH
+)
 
 message( STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}" )
 message( STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}" )

@@ -19,9 +19,10 @@
 #include <llvm/IR/IRBuilder.h>
 #include <sc/context.hpp>
 #include <sc/types.hpp>
-#include <vector>
 
-#include <range/v3/algorithm.hpp>
+#include <span>
+#include <vector>
+#include <algorithm>
 
 namespace sc
 {
@@ -65,7 +66,7 @@ namespace sc
 
         template< binop op >
         struct bin { value lhs, rhs; };
-        
+
         template< predicate pred >
         struct cmp { value lhs, rhs; };
 
@@ -153,13 +154,13 @@ namespace sc
         using and_ = bin< binop::And >;
         using or_  = bin< binop::Or >;
         using xor_ = bin< binop::Xor >;
-        
+
         template< predicate pred >
         struct cmp
         {
             std::optional< value > lhs, rhs;
         };
-        
+
         using oeq = cmp< predicate::FCMP_OEQ >;
         using ogt = cmp< predicate::FCMP_OGT >;
         using oge = cmp< predicate::FCMP_OGE >;
@@ -298,7 +299,7 @@ namespace sc
 
         template< binop op >
         auto bin( value l, value r ) { return CreateBinOp( op, l, r ); }
-        
+
         template< predicate pred >
         auto cmp( value l, value r )
         {
@@ -497,7 +498,7 @@ namespace sc
         auto function_argument_type( function fn, unsigned idx )
         {
             using function_type = llvm::FunctionType;
-            
+
             function_type *fntype = [fn] {
                 if ( fn->getType()->isPointerTy() )
                     return llvm::cast< function_type > (
@@ -512,7 +513,7 @@ namespace sc
         auto apply( const action::call &c ) &&
         {
             values args;
-            
+
             unsigned idx = 0;
             for ( auto arg : c.args ) {
                 auto a = popvalue( arg );
@@ -523,7 +524,7 @@ namespace sc
 
                 args.push_back( a );
             }
-    
+
             push( builder->create( build::call{ c.fn, args } ) );
             return std::move(*this);
         }
@@ -561,7 +562,7 @@ namespace sc
 
         auto apply( action::set_block set ) &&
         {
-            current_block = ranges::find_if( blocks, [&] ( const auto &block ) {
+            current_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
                 return block->getName() == set.name;
             } );
 
@@ -601,7 +602,7 @@ namespace sc
 
         basicblock block( const std::string &name )
         {
-            auto found_block = ranges::find_if( blocks, [&] ( const auto &block ) {
+            auto found_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
                 return block->getName() == name;
             } );
 

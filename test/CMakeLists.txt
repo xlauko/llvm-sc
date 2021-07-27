@@ -3,7 +3,7 @@ find_package( Catch2 CONFIG REQUIRED )
 add_executable( llvmsc-tests )
 
 add_library( catch_main STATIC src/main.cpp )
-target_link_libraries( catch_main 
+target_link_libraries( catch_main
     PRIVATE
         sc_project_options
     PUBLIC
@@ -27,6 +27,10 @@ target_sources( llvmsc-tests
 
 target_link_libraries( llvmsc-tests
     PRIVATE sc_project_options sc_project_warnings catch_main llvmsc ${llvm}
+)
+
+set_target_properties( llvmsc-tests PROPERTIES
+  COMPILE_FLAGS "-fcoroutines"
 )
 
 enable_sanitizers( llvmsc-tests )
