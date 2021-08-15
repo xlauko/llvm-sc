@@ -28,14 +28,6 @@ include( cmake/prevent_in_source_builds.cmake )
 add_library( sc_project_options INTERFACE )
 target_compile_features( sc_project_options INTERFACE cxx_std_20 )
 
-# if ( CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" )
-#     option( ENABLE_BUILD_WITH_TIME_TRACE
-#         "Enable -ftime-trace to generate time tracing .json files on clang" OFF )
-#     if ( ENABLE_BUILD_WITH_TIME_TRACE )
-#         add_compile_definitions( sc_project_options INTERFACE -ftime-trace )
-#     endif()
-# endif()
-
 add_library( sc_project_warnings INTERFACE )
 
 include( cmake/compiler_warnings.cmake )
