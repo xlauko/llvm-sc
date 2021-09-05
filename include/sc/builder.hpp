@@ -19,6 +19,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <sc/context.hpp>
 #include <sc/types.hpp>
+#include <sc/bimap.hpp>
 
 #include <span>
 #include <vector>
@@ -211,12 +212,12 @@ namespace sc
             {}
 
             std::optional< value > cond;
-            std::optional< basicblock > thenbb, elsebb;
+            basicblock thenbb, elsebb;
         };
 
         struct branch
         {
-            std::optional< basicblock > dst;
+            basicblock dst;
         };
 
         struct call
@@ -256,7 +257,6 @@ namespace sc
         struct last {}; // last produced value
 
         struct create_block { std::string name = ""; };
-        struct advance_block { int value; };
         struct set_block { std::string name; };
 
         struct create_function
@@ -337,7 +337,8 @@ namespace sc
             return phi;
         }
 
-        auto condbr( value c, basicblock t, basicblock f ) { return CreateCondBr( c, t, f ); }
+        auto condbr( value c, basicblock t, basicblock f ) { 
+            return CreateCondBr( c, t, f ); }
         auto br( basicblock dst ) { return CreateBr(dst); }
 
         auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
@@ -399,7 +400,7 @@ namespace sc
         ~stack_builder() = default;
 
         void push( value v ) { stack.push_back( v ); }
-        void push( basicblock bb ) { blocks.push_back( bb ); }
+        void push( const std::string &name, basicblock bb ) { blocks.insert(name, bb); }
         void push( function f ) { functions.push_back( f ); }
 
         value pop()
@@ -413,11 +414,6 @@ namespace sc
         value popvalue( std::optional< value > v )
         {
             return v.has_value() ? v.value() : pop();
-        }
-
-        basicblock popblock( std::optional< basicblock > bb, unsigned pos = 1 )
-        {
-            return bb.has_value() ? bb.value() : *std::next( current_block, pos );
         }
 
         auto apply( action::alloc a ) &&
@@ -482,15 +478,15 @@ namespace sc
         auto apply( action::condbr br ) &&
         {
             value cond = popvalue( br.cond );
-            basicblock thenbb = popblock( br.thenbb );
-            basicblock elsebb = popblock( br.elsebb, 2 );
+            basicblock thenbb = br.thenbb;
+            basicblock elsebb = br.elsebb;
             push( builder->create( build::condbr{ cond, thenbb, elsebb } ) );
             return std::move(*this);
         }
 
         auto apply( action::branch br ) &&
         {
-            basicblock dst = popblock( br.dst );
+            basicblock dst = br.dst;
             push( builder->create( build::branch{ dst } ) );
             return std::move(*this);
         }
@@ -544,30 +540,23 @@ namespace sc
 
         auto apply( const action::create_block &b ) &&
         {
-            if ( !functions.empty() )
-                push( llvm::BasicBlock::Create( sc::context(), b.name, functions.back() ) );
-            else
-                push( llvm::BasicBlock::Create( sc::context(), b.name ) );
-            current_block = std::prev( blocks.end() );
-            builder->SetInsertPoint( *current_block );
-            return std::move(*this);
-        }
+            auto bb = [&] {
+                if ( !functions.empty() )
+                    return llvm::BasicBlock::Create( sc::context(), b.name, functions.back() );
+                return llvm::BasicBlock::Create( sc::context(), b.name );
+            } ();
 
-        auto apply( action::advance_block advance ) &&
-        {
-            std::advance( current_block, advance.value );
-            builder->SetInsertPoint( *current_block );
+            blocks.insert(b.name, bb);
+            current_block = bb;
+            builder->SetInsertPoint( current_block );
             return std::move(*this);
         }
 
         auto apply( action::set_block set ) &&
         {
-            current_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
-                return block->getName() == set.name;
-            } );
-
-            assert( current_block != blocks.end() );
-            builder->SetInsertPoint( *current_block );
+            assert( blocks.count(set.name) );
+            current_block = blocks[set.name];
+            builder->SetInsertPoint( current_block );
             return std::move(*this);
         }
 
@@ -602,12 +591,13 @@ namespace sc
 
         basicblock block( const std::string &name )
         {
-            auto found_block = std::ranges::find_if( blocks, [&] ( const auto &block ) {
-                return block->getName() == name;
-            } );
+            assert( blocks.count(name) );
+            return blocks[name];   
+        }
 
-            assert( found_block != blocks.end() );
-            return *found_block;
+        std::string current_block_name()
+        {
+            return blocks[current_block];
         }
 
         std::unique_ptr< builder_t > builder;
@@ -618,8 +608,8 @@ namespace sc
 
         std::vector< function > functions;
 
-        std::vector< basicblock > blocks;
-        std::vector< basicblock >::iterator current_block;
+        sc::adt::bimap< std::string, basicblock > blocks;
+        basicblock current_block;
 
         std::vector< value > stack;
     };
