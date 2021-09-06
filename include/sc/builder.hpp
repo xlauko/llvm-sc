@@ -33,6 +33,8 @@ namespace sc
     using basicblock = llvm::BasicBlock *;
     using function = llvm::Function *;
 
+    using function_callee = llvm::FunctionCallee;
+
     using predicate = llvm::CmpInst::Predicate;
     using binop = llvm::Instruction::BinaryOps;
 
@@ -103,7 +105,7 @@ namespace sc
 
         struct call
         {
-            function fn;
+            function_callee fn;
             values args;
         };
 
@@ -222,22 +224,18 @@ namespace sc
 
         struct call
         {
-            call( value _fn, const std::span< value > &as )
-                : call( function( _fn ), as )
-            {}
-
-            call( function _fn, const std::span< value > &as )
-                : fn( _fn )
+            call( function_callee callee, const std::span< value > &as )
+                : fn( callee )
             {
                 for ( auto arg : as )
                     args.push_back( arg );
             }
 
-            call( function _fn, std::vector< std::optional< value > > &&as )
-                : fn( _fn ), args( std::move( as ) )
+            call( function_callee callee, std::vector< std::optional< value > > &&as )
+                : fn( callee ), args( std::move( as ) )
             {}
 
-            function fn;
+            function_callee fn;
             std::vector< std::optional< value > > args;
         };
 
@@ -342,6 +340,7 @@ namespace sc
         auto br( basicblock dst ) { return CreateBr(dst); }
 
         auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
+        auto call( function_callee fn, const values &args ) { return CreateCall( fn, args ); }
 
         auto ret( value val ) { return CreateRet( val ); }
         auto retvoid() { return CreateRetVoid(); }
@@ -377,7 +376,7 @@ namespace sc
         auto create( build::condbr b ) { return condbr( b.cond, b.thenbb, b.elsebb ); }
         auto create( build::branch b ) { return br( b.dst ); }
 
-        auto create( const build::call &c ) { return call( c.fn, c.args ); }
+        auto create( build::call c ) { return call( c.fn, c.args ); }
 
         auto create( build::ret r )
         {
@@ -491,22 +490,22 @@ namespace sc
             return std::move(*this);
         }
 
-        auto function_argument_type( function fn, unsigned idx )
+        auto function_type_from_value( value v )
         {
-            using function_type = llvm::FunctionType;
-
-            function_type *fntype = [fn] {
-                if ( fn->getType()->isPointerTy() )
-                    return llvm::cast< function_type > (
-                        fn->getType()->getPointerElementType()
-                    );
-                return fn->getFunctionType();
-            } ();
-
-            return fntype->getParamType( idx );
+            if ( v->getType()->isPointerTy() ) {
+                return llvm::cast< llvm::FunctionType > (
+                    v->getType()->getPointerElementType()
+                );
+            }
+            return llvm::cast< llvm::Function >(v)->getFunctionType();
         }
 
-        auto apply( const action::call &c ) &&
+        auto function_argument_type( function_callee callee, unsigned idx )
+        {
+            return callee.getFunctionType()->getParamType( idx );
+        }
+
+        auto apply( action::call c ) &&
         {
             values args;
 
