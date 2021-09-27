@@ -23,7 +23,9 @@
 
 #include <sstream>
 #include <string>
+#include <ranges>
 #include <string_view>
+#include <experimental/iterator>
 
 namespace sc::fmt
 {
@@ -99,12 +101,26 @@ namespace sc::fmt
     }
 
     template< typename T >
-    inline std::string llvm_to_string( T val )
+    concept llvm_printable = requires(T *v) {
+        v->print( std::declval< llvm::raw_string_ostream& >() );
+    };
+
+    inline std::string llvm_to_string( const llvm_printable auto *val )
     {
         std::string buffer;
         llvm::raw_string_ostream rso( buffer );
         val->print( rso );
         return buffer;
+    }
+
+    inline std::string llvm_to_string( const std::ranges::range auto &vals, std::string_view separator = ", " )
+    {
+        auto to_llvm = [] (const auto &value) { return llvm_to_string(value); };
+
+        std::stringstream ss;
+        auto strs = std::ranges::views::transform(vals, to_llvm);
+        std::copy(strs.begin(), strs.end(), std::experimental::make_ostream_joiner(ss, separator));
+        return ss.str();
     }
 
     inline std::string llvm_name( llvm::Value * value )
