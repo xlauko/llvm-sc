@@ -24,11 +24,16 @@ namespace sc
     {
         using instruction = llvm::Instruction *;
         
-        deferred_erase(deleter &d, instruction i) : del(d), inst(i) {}
-        ~deferred_erase() { del(inst); inst->eraseFromParent(); }
+        deferred_erase(deleter d, instruction i) : del(d), inst(i) {}
+        ~deferred_erase()
+        { 
+            if (inst->getParent())
+                inst->eraseFromParent();
+            del(inst);
+        }
 
     private:
-        deleter &del;
+        deleter del;
         instruction inst;
     };
 
