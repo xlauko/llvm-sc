@@ -19,19 +19,19 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 
-#include <ranges>
 #include <algorithm>
+#include <vector>
+
+#include <range/v3/range/conversion.hpp>
+#include <range/v3/view/all.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/join.hpp>
 
 namespace sc::views
 {
     template< typename... Ts > struct overloaded : Ts... { using Ts::operator()...; };
     template< typename... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-    template< std::ranges::range R >
-    auto to_vector(R&& r) {
-        auto r_common = r | std::views::common;
-        return std::vector(r_common.begin(), r_common.end());
-    }
 
     using llvmmodule = llvm::Module;
     using function   = llvm::Function;
@@ -66,32 +66,32 @@ namespace sc::views
 
     // map
     static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
-    static const auto pointers = std::views::transform( pointer );
+    static const auto pointers = ranges::views::transform( pointer );
 
-    static const auto types = std::views::transform( type );
-
-    template< typename T >
-    static const auto mapdyncast = std::views::transform( dyncast< T > );
+    static const auto types = ranges::views::transform( type );
 
     template< typename T >
-    static auto mapcast = std::views::transform( cast< T > );
+    static const auto mapdyncast = ranges::views::transform( dyncast< T > );
+
+    template< typename T >
+    static auto mapcast = ranges::views::transform( cast< T > );
 
     // filter
     template< typename T >
-    static const auto filter_range = mapdyncast< T > | std::views::filter( notnull );
+    static const auto filter_range = mapdyncast< T > | ranges::views::filter( notnull );
 
     static const auto instructions = overloaded {
         []( basicblock *bb ) { return *bb | pointers; },
         []( basicblock &bb ) { return  bb | pointers; },
-        []( function   *fn ) { return *fn | std::views::join | pointers; },
-        []( function   &fn ) { return  fn | std::views::join | pointers; },
-        []( llvmmodule  *m ) { return  *m | std::views::join | std::views::join | pointers; },
-        []( llvmmodule  &m ) { return   m | std::views::join | std::views::join | pointers; },
+        []( function   *fn ) { return *fn | ranges::views::join | pointers; },
+        []( function   &fn ) { return  fn | ranges::views::join | pointers; },
+        []( llvmmodule  *m ) { return  *m | ranges::views::join | ranges::views::join | pointers; },
+        []( llvmmodule  &m ) { return   m | ranges::views::join | ranges::views::join | pointers; },
     };
 
     static const auto basicblocks = overloaded {
-        []( function *fn ) { return std::views::all(*fn); },
-        []( function &fn ) { return std::views::all( fn); }
+        []( function *fn ) { return ranges::views::all(*fn); },
+        []( function &fn ) { return ranges::views::all( fn); }
     };
 
     template< typename T >

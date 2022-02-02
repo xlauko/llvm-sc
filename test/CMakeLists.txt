@@ -29,10 +29,6 @@ target_link_libraries( llvmsc-tests
     PRIVATE sc_project_options sc_project_warnings catch_main llvmsc ${llvm}
 )
 
-set_target_properties( llvmsc-tests PROPERTIES
-  COMPILE_FLAGS "-fcoroutines"
-)
-
 enable_sanitizers( llvmsc-tests )
 
 target_include_directories( llvmsc-tests

@@ -66,15 +66,16 @@ add_library( llvmsc
     src/types.cpp
 )
 
-set_target_properties( llvmsc PROPERTIES
-  COMPILE_FLAGS "-fcoroutines"
-)
-
+find_package(Coroutines COMPONENTS Experimental Final REQUIRED)
+find_package(range-v3 CONFIG REQUIRED)
 
 set_property(TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
 target_link_libraries( llvmsc
+    PUBLIC
+		    std::coroutines
+        range-v3 range-v3-meta range-v3::meta range-v3-concepts
     PRIVATE
         sc_project_options
         sc_project_warnings
