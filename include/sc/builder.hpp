@@ -63,7 +63,7 @@ namespace sc
 
         struct load
         {
-            std::optional< type > ty;
+            type ty;
             value ptr;
         };
 
@@ -124,12 +124,11 @@ namespace sc
         {
             load() = default;
 
-            explicit load( type t ) : ty( t ) {}
-            explicit load( std::string from ) : from_var( from ) {}
+            // explicit load( type t ) : ty( t ) {}
             load( type t, std::string from ) : ty( t ), from_var( from ) {}
 
-            std::optional< type > ty;
-            std::optional< std::string > from_var;
+            type ty;
+            std::string from_var;
         };
 
         template< binop op >
@@ -293,7 +292,6 @@ namespace sc
         }
 
         auto load( type ty, value ptr ) { return CreateLoad( ty, ptr ); }
-        auto load( value ptr ) { return CreateLoad( ptr ); }
 
         template< binop op >
         auto bin( value l, value r ) { return CreateBinOp( op, l, r ); }
@@ -352,12 +350,7 @@ namespace sc
             return alloc( a.ty );
         }
 
-        auto create( build::load l )
-        {
-            if ( l.ty.has_value() )
-                return load( l.ty.value(), l.ptr );
-            return load( l.ptr );
-        }
+        auto create( build::load l ) { return load( l.ty, l.ptr ); }
 
         template< binop op >
         auto create( build::bin< op > a ) { return bin< op >( a.lhs, a.rhs ); }
@@ -429,8 +422,7 @@ namespace sc
 
         auto apply( action::load l ) &&
         {
-            value ptr = l.from_var.has_value() ? vars.at( l.from_var.value() ) : pop();
-            push( builder->create( build::load{ l.ty, ptr } ) );
+            push( builder->create( build::load{ l.ty, vars.at( l.from_var ) } ) );
             return std::move(*this);
         }
 
