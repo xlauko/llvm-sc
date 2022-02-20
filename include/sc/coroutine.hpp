@@ -1,35 +1,35 @@
-#pragma once
+#ifndef CPPCORO_COROUTINE_HPP_INCLUDED
+#define CPPCORO_COROUTINE_HPP_INCLUDED
 
 #include <sc/config.hpp>
 
-#ifdef SC_COROHEADER_FOUND_AND_USABLE
+#ifdef CPPCORO_COROHEADER_FOUND_AND_USABLE
 
-    #include <coroutine>
+#include <coroutine>
 
-namespace sc
-{
-    using std::coroutine_handle;
-    using std::noop_coroutine;
-    using std::suspend_always;
-    using std::suspend_never;
-
-} // namespace sc
+namespace cppcoro {
+  using std::coroutine_handle;
+  using std::suspend_always;
+  using std::noop_coroutine;
+  using std::suspend_never;
+}
 
 #elif __has_include(<experimental/coroutine>)
 
-    #include <experimental/coroutine>
+#include <experimental/coroutine>
 
-namespace sc
-{
-    using std::experimental::coroutine_handle;
-    using std::experimental::suspend_always;
-    using std::experimental::suspend_never;
+namespace cppcoro {
+  using std::experimental::coroutine_handle;
+  using std::experimental::suspend_always;
+  using std::experimental::suspend_never;
 
-    #if SC_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
+#if CPPCORO_COMPILER_SUPPORTS_SYMMETRIC_TRANSFER
     using std::experimental::noop_coroutine;
-    #endif
-} // namespace sc
+#endif
+}
 
 #else
-    #error sc requires a C++20 compiler with coroutine support
+#error Cppcoro requires a C++20 compiler with coroutine support
+#endif
+
 #endif
