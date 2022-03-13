@@ -105,16 +105,16 @@ TEST_CASE( "llvm views", "[ranges]" )
 
     SECTION( "instructions" )
     {
-        REQUIRE( std::ranges::distance( sc::views::instructions(m) ) == 11 );
-        REQUIRE( std::ranges::distance( sc::views::instructions(*m) ) == 11 );
+        REQUIRE( ranges::distance( sc::views::instructions(m) ) == 11 );
+        REQUIRE( ranges::distance( sc::views::instructions(*m) ) == 11 );
 
-        REQUIRE( std::ranges::distance( sc::views::instructions(fn) ) == 11 );
-        REQUIRE( std::ranges::distance( sc::views::instructions(*fn) ) == 11 );
+        REQUIRE( ranges::distance( sc::views::instructions(fn) ) == 11 );
+        REQUIRE( ranges::distance( sc::views::instructions(*fn) ) == 11 );
 
-        REQUIRE( std::ranges::distance( sc::views::instructions(tbb) ) == 2 );
-        REQUIRE( std::ranges::distance( sc::views::instructions(*tbb) ) == 2 );
-        REQUIRE( std::ranges::distance( sc::views::instructions(ebb) ) == 3 );
-        REQUIRE( std::ranges::distance( sc::views::instructions(*ebb) ) == 3 );
+        REQUIRE( ranges::distance( sc::views::instructions(tbb) ) == 2 );
+        REQUIRE( ranges::distance( sc::views::instructions(*tbb) ) == 2 );
+        REQUIRE( ranges::distance( sc::views::instructions(ebb) ) == 3 );
+        REQUIRE( ranges::distance( sc::views::instructions(*ebb) ) == 3 );
     }
 
     SECTION( "filter instructions" )
@@ -125,13 +125,13 @@ TEST_CASE( "llvm views", "[ranges]" )
         auto loads = insts | sc::views::mapdyncast< load >
                            | std::views::filter( sc::views::notnull );
 
-        REQUIRE( std::ranges::distance( loads ) == 4 );
+        REQUIRE( ranges::distance( loads ) == 4 );
 
         auto isi8 = [] (auto v) { return v == sc::i8(); };
-        REQUIRE( std::ranges::all_of( loads | sc::views::types, isi8 ) );
+        REQUIRE( ranges::all_of( loads | sc::views::types, isi8 ) );
 
         using bin = llvm::BinaryOperator;
-        REQUIRE( std::ranges::distance( sc::views::filter< bin >( m ) ) == 3 );
-        REQUIRE( std::ranges::distance( sc::views::filter< bin >( *m ) ) == 3 );
+        REQUIRE( ranges::distance( sc::views::filter< bin >( m ) ) == 3 );
+        REQUIRE( ranges::distance( sc::views::filter< bin >( *m ) ) == 3 );
     }
 }
