@@ -96,6 +96,10 @@ message( STATUS "CMake generator: ${CMAKE_GENERATOR}" )
 # VERIFY LLVM INSTALLATION DIR
 
 # Set this to a valid LLVM installation dir
+if ( DEFINED ENV{LLVM_INSTALL_DIR} AND NOT DEFINED LLVM_INSTALL_DIR )
+  set( LLVM_INSTALL_DIR "$ENV{LLVM_INSTALL_DIR}" )
+endif()
+
 set( LLVM_INSTALL_DIR "" CACHE PATH "LLVM installation directory" )
 
 # A bit of a sanity checking
