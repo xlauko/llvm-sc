@@ -2,18 +2,6 @@ find_package( Catch2 CONFIG REQUIRED )
 
 add_executable( llvmsc-tests )
 
-add_library( catch_main STATIC src/main.cpp )
-target_link_libraries( catch_main
-    PRIVATE
-        sc_project_options
-    PUBLIC
-        Catch2::Catch2
-)
-
-target_include_directories( catch_main
-    PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-)
-
 target_sources( llvmsc-tests
     PRIVATE
         src/init.cpp
@@ -26,11 +14,12 @@ target_sources( llvmsc-tests
 )
 
 target_link_libraries( llvmsc-tests
-    PRIVATE sc_project_options sc_project_warnings catch_main llvmsc ${llvm}
-)
-
-set_target_properties( llvmsc-tests PROPERTIES
-  COMPILE_FLAGS "-fcoroutines"
+    PRIVATE
+        sc_project_options
+        sc_project_warnings
+        llvmsc
+        ${llvm}
+        Catch2::Catch2WithMain
 )
 
 enable_sanitizers( llvmsc-tests )

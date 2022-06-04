@@ -5,6 +5,8 @@ if ( DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE )
       CACHE STRING "" )
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 set( SC_VERSION_MAJOR 0 )
 set( SC_VERSION_MINOR 1 )
 set( SC_VERSION_PATCH 0 )
@@ -22,24 +24,24 @@ project( llvm-sc
     VERSION 0.1.0
 )
 
-include( cmake/project_settings.cmake )
-include( cmake/prevent_in_source_builds.cmake )
+include( project_settings )
+include( prevent_in_source_builds )
 
 add_library( sc_project_options INTERFACE )
 target_compile_features( sc_project_options INTERFACE cxx_std_20 )
 
 add_library( sc_project_warnings INTERFACE )
 
-include( cmake/compiler_warnings.cmake )
+include( compiler_warnings )
 set_project_warnings( sc_project_warnings )
 
 # enable cache system
-include( cmake/ccache.cmake )
+include( ccache )
 
-include( cmake/sanitizers.cmake )
+include( sanitizers )
 
 # allow for static analysis options
-include( cmake/static_analyzers.cmake )
+include( static_analyzers )
 
 option( BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF )
 option( ENABLE_TESTING "Enable Test Builds" OFF )
@@ -49,7 +51,7 @@ option( ENABLE_PCH "Enable Precompiled Headers" OFF )
 if ( ENABLE_PCH )
     target_precompile_headers(
         sc_project_options
-        INTERFACE
+      INTERFACE
         <vector>
         <string>
         <map>
@@ -66,15 +68,16 @@ add_library( llvmsc
     src/types.cpp
 )
 
-set_target_properties( llvmsc PROPERTIES
-  COMPILE_FLAGS "-fcoroutines"
-)
-
-
-set_property(TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property( TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON )
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
+find_package( cppcoro CONFIG REQUIRED )
+find_package( range-v3 CONFIG REQUIRED )
+
 target_link_libraries( llvmsc
+    PUBLIC
+        cppcoro
+        range-v3
     PRIVATE
         sc_project_options
         sc_project_warnings
@@ -100,6 +103,7 @@ if ( DEFINED ENV{LLVM_INSTALL_DIR} AND NOT DEFINED LLVM_INSTALL_DIR )
 endif()
 
 set( LLVM_INSTALL_DIR "" CACHE PATH "LLVM installation directory" )
+message( STATUS "Using LLVM_INSTALL_DIR: ${LLVM_INSTALL_DIR}" )
 
 # A bit of a sanity checking
 set( LLVM_INCLUDE_DIR "${LLVM_INSTALL_DIR}/include/llvm" )

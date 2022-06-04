@@ -293,7 +293,6 @@ namespace sc
         }
 
         auto load( type ty, value ptr ) { return CreateLoad( ty, ptr ); }
-        auto load( value ptr ) { return CreateLoad( ptr ); }
 
         template< binop op >
         auto bin( value l, value r ) { return CreateBinOp( op, l, r ); }
@@ -335,7 +334,7 @@ namespace sc
             return phi;
         }
 
-        auto condbr( value c, basicblock t, basicblock f ) { 
+        auto condbr( value c, basicblock t, basicblock f ) {
             return CreateCondBr( c, t, f ); }
         auto br( basicblock dst ) { return CreateBr(dst); }
 
@@ -591,7 +590,7 @@ namespace sc
         basicblock block( const std::string &name )
         {
             assert( blocks.count(name) );
-            return blocks[name];   
+            return blocks[name];
         }
 
         std::string current_block_name()
