@@ -71,13 +71,13 @@ add_library( llvmsc
 set_property( TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON )
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
-find_package( cppcoro CONFIG REQUIRED )
+find_package( Coroutines REQUIRED )
 find_package( range-v3 CONFIG REQUIRED )
 
 target_link_libraries( llvmsc
     PUBLIC
-        cppcoro
         range-v3
+        std::coroutines
     PRIVATE
         sc_project_options
         sc_project_warnings

@@ -21,7 +21,7 @@
 namespace sc
 {
     template< typename Value >
-    auto annotation::enumerate( llvm::Module &m ) -> cppcoro::generator< annotated< Value > >
+    auto annotation::enumerate( llvm::Module &m ) -> sc::generator< annotated< Value > >
     {
         using const_array = llvm::ConstantArray;
         const auto annos  = m.getNamedGlobal( "llvm.global.annotations" );
@@ -46,7 +46,7 @@ namespace sc
 
     template< typename Value >
     auto annotation::enumerate_in_namespace( annotation ns, llvm::Module &m )
-        -> cppcoro::generator< annotated< Value > >
+        -> sc::generator< annotated< Value > >
     {
         for ( auto &&ann : enumerate< Value >( m ) )
             if ( ann.second.in_namespace( ns ) )

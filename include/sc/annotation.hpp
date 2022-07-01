@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <cppcoro/generator.hpp>
+#include <sc/generator.hpp>
 #include <llvm/IR/Module.h>
 #include <sc/transformer.hpp>
 #include <string_view>
@@ -70,10 +70,10 @@ namespace sc
         parts_t _parts;
 
         template< typename Value >
-        static cppcoro::generator< annotated< Value > > enumerate( llvm::Module &m );
+        static sc::generator< annotated< Value > > enumerate( llvm::Module &m );
 
         template< typename Value >
-        static cppcoro::generator< annotated< Value > > enumerate_in_namespace( annotation ns,
+        static sc::generator< annotated< Value > > enumerate_in_namespace( annotation ns,
                                                                        llvm::Module &m );
 
         template< typename ostream >

@@ -353,9 +353,8 @@ namespace sc
 
         auto create( build::load l )
         {
-            if ( l.ty.has_value() )
-                return load( l.ty.value(), l.ptr );
-            return load( l.ptr );
+            assert( l.ty.has_value() );
+            return load( l.ty.value(), l.ptr );
         }
 
         template< binop op >
