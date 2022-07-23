@@ -613,18 +613,17 @@ namespace sc
 
     namespace detail
     {
-        template< typename Builder, typename Action >
-        auto make_stack_builder( Builder &&builder, Action &&action )
+        template< typename Action >
+        auto make_stack_builder( stack_builder &&builder, Action &&action )
         {
             return std::move( builder ).apply( action );
         }
     } // namespace detail
 
-    template< typename Builder, typename Action >
-    auto operator|( Builder &&builder, Action &&action )
+    template< typename Action >
+    auto operator|( stack_builder &&builder, Action &&action )
     {
-        return detail::make_stack_builder( std::forward< Builder >( builder ),
-                                           std::forward< Action >( action ) );
+        return detail::make_stack_builder( std::move(builder), std::forward< Action >( action ) );
     }
 
 } // namespace sc

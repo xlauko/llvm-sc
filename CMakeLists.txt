@@ -24,6 +24,10 @@ project( llvm-sc
     VERSION 0.1.0
 )
 
+# Globally set the required C++ standard
+set( CMAKE_CXX_STANDARD 20 )
+set( CMAKE_CXX_EXTENSIONS ON )
+
 include( project_settings )
 include( prevent_in_source_builds )
 
@@ -71,16 +75,14 @@ add_library( llvmsc
 set_property( TARGET llvmsc PROPERTY POSITION_INDEPENDENT_CODE ON )
 add_library( llvmsc::llvmsc ALIAS llvmsc )
 
-find_package( Coroutines REQUIRED )
-find_package( range-v3 CONFIG REQUIRED )
+find_package( Coroutines COMPONENTS Experimental Final REQUIRED )
 
 target_link_libraries( llvmsc
-    PUBLIC
-        range-v3
-        std::coroutines
     PRIVATE
         sc_project_options
         sc_project_warnings
+    INTERFACE
+        std::coroutines
 )
 
 set_target_properties( llvmsc PROPERTIES CXX_EXTENSIONS OFF )

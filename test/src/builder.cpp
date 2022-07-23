@@ -18,7 +18,7 @@ TEST_CASE( "builder" )
     {
         using namespace sc::literals;
 
-        auto i = builder
+        auto i = std::move(builder)
           | sc::action::create_block{ "constant-test" }
           | sc::action::add{ 10_i8, 5_i8 }
           | sc::action::last();
@@ -28,7 +28,7 @@ TEST_CASE( "builder" )
 
     SECTION( "chain" )
     {
-        auto inst = builder
+        auto inst = std::move(builder)
           | sc::action::create_block{ "chain-test" }
           | sc::action::alloc( sc::i8() )
           | sc::action::load()
@@ -39,7 +39,7 @@ TEST_CASE( "builder" )
 
     SECTION( "chain stacked" )
     {
-        auto inst = builder
+        auto inst = std::move(builder)
           | sc::action::create_block{ "chain-stacked-test" }
           | sc::action::alloc( sc::i8(), "a" )
           | sc::action::alloc( sc::i8(), "b" )
@@ -57,7 +57,7 @@ TEST_CASE( "builder" )
     {
         using namespace sc::literals;
 
-        auto inst = builder
+        auto inst = std::move(builder)
           | sc::action::create_block{ "mixed-load-test" }
           | sc::action::alloc( sc::i8(), "a" )
           | sc::action::load( "a" )

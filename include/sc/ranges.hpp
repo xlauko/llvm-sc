@@ -16,13 +16,12 @@
 
 #pragma once
 
+#ifdef SC_ENABLE_RANGES
+
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 
-#include <range/v3/range/concepts.hpp>
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/view/join.hpp>
+#include <sc/warnings.hpp>
 
 #include <algorithm>
 
@@ -35,32 +34,6 @@ namespace sc::views
     using function   = llvm::Function;
     using basicblock = llvm::BasicBlock;
 
-    template< typename T >
-    auto is = overloaded {
-        []( auto  *v ) { return llvm::isa< T >(  v ); },
-        []( auto &&v ) { return llvm::isa< T >( &v ); }
-    };
-
-    template< typename T >
-    auto isnot = overloaded {
-        []( auto  *v ) { return !llvm::isa< T >(  v ); },
-        []( auto &&v ) { return !llvm::isa< T >( &v ); }
-    };
-
-    template< typename T >
-    auto dyncast = overloaded {
-        []( auto  *v ) { return llvm::dyn_cast< T >(  v ); },
-        []( auto &&v ) { return llvm::dyn_cast< T >( &v ); }
-    };
-
-    template< typename T >
-    auto cast = overloaded {
-        []( auto  *v ) { return llvm::cast< T >(  v ); },
-        []( auto &&v ) { return llvm::cast< T >( &v ); }
-    };
-
-    static const auto notnull = [] ( auto *v ) -> bool { return v != nullptr; };
-    static const auto type = [] ( auto *val ) { return val->getType(); };
 
     // map
     static const auto pointer = [] ( auto &ref ) { return std::addressof(ref); };
@@ -97,5 +70,6 @@ namespace sc::views
         return instructions( llvm ) | filter_range< T >;
     }
 
-
 } // namespace sc::views
+
+#endif
