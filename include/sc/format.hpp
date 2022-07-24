@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <range/v3/range/primitives.hpp>
-
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 #include <llvm/Support/raw_ostream.h>
@@ -36,9 +34,7 @@
 namespace sc::fmt
 {
     using split_view = std::pair< std::string_view, std::string_view >;
-    
-    namespace ranges = ::ranges;
-    
+
     static inline split_view split( std::string_view p, char d, bool reverse = false ) noexcept
     {
         auto s = reverse ? p.rfind( d ) : p.find( d );
@@ -52,7 +48,7 @@ namespace sc::fmt
 
     template< typename gen_t, typename state_t > struct generator
     {
-        using value_type = std::tuple_element_t< 0, ranges::result_of_t< gen_t( state_t ) > >;
+        using value_type = std::tuple_element_t< 0, std::result_of_t< gen_t( state_t ) > >;
         gen_t _gen;
         state_t _initial;
 

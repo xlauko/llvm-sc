@@ -352,8 +352,8 @@ namespace sc
 
         auto create( build::load l )
         {
-            assert( l.ty.has_value() );
-            return load( l.ty.value(), l.ptr );
+            assert( l.ty );
+            return load( l.ty, l.ptr );
         }
 
 

@@ -43,8 +43,8 @@ TEST_CASE( "builder" )
           | sc::action::create_block{ "chain-stacked-test" }
           | sc::action::alloc( sc::i8(), "a" )
           | sc::action::alloc( sc::i8(), "b" )
-          | sc::action::load( "a" )
-          | sc::action::load( "b" )
+          | sc::action::load( sc::i8(), "a" )
+          | sc::action::load( sc::i8(), "b" )
           | sc::action::add()
           | sc::action::last();
 
@@ -60,7 +60,7 @@ TEST_CASE( "builder" )
         auto inst = std::move(builder)
           | sc::action::create_block{ "mixed-load-test" }
           | sc::action::alloc( sc::i8(), "a" )
-          | sc::action::load( "a" )
+          | sc::action::load( sc::i8(), "a" )
           | sc::action::add{ {}, 5_i8 }
           | sc::action::last();
 

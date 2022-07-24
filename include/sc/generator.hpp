@@ -81,7 +81,7 @@ namespace sc
         template< typename T >
         struct generator_iterator {
             using promise_type     = detail::generator_promise_type< T >;
-            using coroutine_handle = sc::coroutine_handle<promise_type >;
+            using coroutine_handle = sc::coroutine_handle< promise_type >;
 
             using iterator_category = std::input_iterator_tag;
             using difference_type   = std::ptrdiff_t;
@@ -134,8 +134,8 @@ namespace sc
     template< typename T >
     struct [[nodiscard]] generator {
         using iterator         = detail::generator_iterator< T >;
-        using promise_type     = detail::promise_type< T >;
-        using coroutine_handle = detail::coroutine_handle< T >;
+        using promise_type     = detail::generator_promise_type< T >;
+        using coroutine_handle = sc::coroutine_handle< promise_type >;
 
         generator(generator&& other) noexcept
             : _coroutine(other._coroutine) {
@@ -183,8 +183,8 @@ namespace sc
     {
         template< typename T >
         generator< T > generator_promise_type< T >::get_return_object() noexcept {
-            using coroutine_handle = detail::coroutine_handle< T >;
-            return generator< T >{ coroutine_handle::from_promise(*this) };
+            using handle = sc::coroutine_handle< generator_promise_type< T > >;
+            return generator< T >{ handle::from_promise(*this) };
         }
     } // namespace detail
 
