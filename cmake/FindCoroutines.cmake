@@ -1,7 +1,9 @@
 # Copyright (c) 2019-present, Facebook, Inc.
 #
+
 # This source code is licensed under the Apache License found in the LICENSE.txt file in the root
 # directory of this source tree.
+
 
 #[=======================================================================[.rst:
 
@@ -93,6 +95,7 @@ Using `find_package(Coroutines)` with no component arguments:
 
 
 #]=======================================================================]
+
 
 if (TARGET std::coroutines)
   # This module has already been processed. Don't do it again.
@@ -257,7 +260,6 @@ if (CXX_COROUTINES_HAVE_COROUTINES)
             ) {}
           @CXX_COROUTINES_NAMESPACE@::coroutine_handle<promise_type> coro_;
         };
-
         present f(int n) {
           if (n < 2)
             co_return 1;

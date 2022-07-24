@@ -21,9 +21,11 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 
+
 #include <sc/warnings.hpp>
 
 #include <algorithm>
+#include <vector>
 
 namespace sc::views
 {
