@@ -80,9 +80,6 @@ add_library( llvmsc::llvmsc ALIAS llvmsc )
 find_package( Coroutines COMPONENTS Experimental Final REQUIRED )
 
 target_link_libraries( llvmsc
-    PUBLIC
-		    std::coroutines
-        range-v3 range-v3-meta range-v3::meta range-v3-concepts
     PRIVATE
         sc_project_options
         sc_project_warnings
