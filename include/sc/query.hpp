@@ -179,7 +179,6 @@ namespace sc::query
         {
             R( Collection &&c ) : Collection( std::move( c ) ) {}
 
-            using iterator = typename Collection::reverse_iterator;
             auto begin() { return Collection::rbegin(); }
             auto end() { return Collection::rend(); }
         };
@@ -767,7 +766,7 @@ namespace sc::query
                   typename R = typename std::result_of< Map( ValueType & ) >::type >
         struct FindMapResult
         {
-            FindMapResult( FindResult find, Map map ) : find( find ), map( map ) {}
+            FindMapResult( FindResult f, Map m ) : find( f ), map( m ) {}
 
             FindResult find;
             Map map;
@@ -778,7 +777,7 @@ namespace sc::query
 
         struct FindResult
         {
-            FindResult( Iterator it, long pos ) : iter( it ), pos( pos ), found( true ) {}
+            FindResult( Iterator it, long _pos ) : iter( it ), pos( _pos ), found( true ) {}
             explicit FindResult( Iterator end ) : iter( end ), pos( -1 ), found( false )
             {}
 

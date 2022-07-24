@@ -1,9 +1,7 @@
 # Copyright (c) 2019-present, Facebook, Inc.
 #
-
 # This source code is licensed under the Apache License found in the LICENSE.txt file in the root
 # directory of this source tree.
-
 
 #[=======================================================================[.rst:
 
@@ -52,9 +50,9 @@ Imported Targets
     be defined.
 
     .. note::
-        This target has ``cxx_std_17`` as an ``INTERFACE``
+        This target has ``cxx_std_20`` as an ``INTERFACE``
         :ref:`compile language standard feature <req-lang-standards>`. Linking
-        to this target will automatically enable C++17 if no later standard
+        to this target will automatically enable C++20 if no later standard
         version is already required on the linking target.
 
 
@@ -95,7 +93,6 @@ Using `find_package(Coroutines)` with no component arguments:
 
 
 #]=======================================================================]
-
 
 if (TARGET std::coroutines)
   # This module has already been processed. Don't do it again.
@@ -260,6 +257,7 @@ if (CXX_COROUTINES_HAVE_COROUTINES)
             ) {}
           @CXX_COROUTINES_NAMESPACE@::coroutine_handle<promise_type> coro_;
         };
+
         present f(int n) {
           if (n < 2)
             co_return 1;
@@ -289,6 +287,7 @@ if (CXX_COROUTINES_HAVE_COROUTINES)
 
   if (COROUTINES_CAN_LINK)
     add_library(std::coroutines INTERFACE IMPORTED)
+    target_compile_features(std::coroutines INTERFACE cxx_std_20)
     set(_found TRUE)
 
     if (CXX_COROUTINES_NO_AWAIT_NEEDED)
@@ -303,12 +302,12 @@ endif ()
 
 cmake_pop_check_state()
 
-set(COROUTINES_FOUND
+set(Coroutines_FOUND
     ${_found}
     CACHE BOOL "TRUE if we can compile and link a program using std::coroutines" FORCE
 )
 
-if (Coroutines_FIND_REQUIRED AND NOT COROUTINES_FOUND)
+if (Coroutines_FIND_REQUIRED AND NOT Coroutines_FOUND)
   message(
     FATAL_ERROR "Cannot compile simple program using std::coroutines."
   )

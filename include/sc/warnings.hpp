@@ -24,4 +24,4 @@
   _Pragma( "GCC diagnostic ignored \"-Wold-style-cast\"" )
 
 #define SC_UNRELAX_WARNINGS \
-  _Pragma( "GCC diagnostic pop" ) \
+  _Pragma( "GCC diagnostic pop" )

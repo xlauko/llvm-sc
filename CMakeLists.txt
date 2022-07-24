@@ -83,7 +83,7 @@ target_link_libraries( llvmsc
     PRIVATE
         sc_project_options
         sc_project_warnings
-    INTERFACE
+    PUBLIC
         std::coroutines
 )
 
