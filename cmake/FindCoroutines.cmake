@@ -1,7 +1,9 @@
 # Copyright (c) 2019-present, Facebook, Inc.
 #
-# This source code is licensed under the Apache License found in the
-# LICENSE.txt file in the root directory of this source tree.
+
+# This source code is licensed under the Apache License found in the LICENSE.txt file in the root
+# directory of this source tree.
+
 
 #[=======================================================================[.rst:
 
@@ -95,10 +97,10 @@ Using `find_package(Coroutines)` with no component arguments:
 #]=======================================================================]
 
 
-if(TARGET std::coroutines)
-    # This module has already been processed. Don't do it again.
-    return()
-endif()
+if (TARGET std::coroutines)
+  # This module has already been processed. Don't do it again.
+  return()
+endif ()
 
 include(CheckCXXCompilerFlag)
 include(CMakePushCheckState)
@@ -114,103 +116,125 @@ check_cxx_compiler_flag(/await:heapelide _CXX_COROUTINES_SUPPORTS_MS_HEAPELIDE_F
 check_cxx_compiler_flag(-fcoroutines-ts _CXX_COROUTINES_SUPPORTS_TS_FLAG)
 check_cxx_compiler_flag(-fcoroutines _CXX_COROUTINES_SUPPORTS_CORO_FLAG)
 
-if(_CXX_COROUTINES_SUPPORTS_MS_FLAG)
-    set(_CXX_COROUTINES_EXTRA_FLAGS "/await")
-    if(_CXX_COROUTINES_SUPPORTS_MS_HEAPELIDE_FLAG AND CMAKE_SIZEOF_VOID_P GREATER_EQUAL 8)
-        list(APPEND _CXX_COROUTINES_EXTRA_FLAGS "/await:heapelide")
-    endif()
-elseif(_CXX_COROUTINES_SUPPORTS_TS_FLAG)
-    set(_CXX_COROUTINES_EXTRA_FLAGS "-fcoroutines-ts")
-elseif(_CXX_COROUTINES_SUPPORTS_CORO_FLAG)
-    set(_CXX_COROUTINES_EXTRA_FLAGS "-fcoroutines")
-endif()
+if (_CXX_COROUTINES_SUPPORTS_MS_FLAG)
+  set(CXX_COROUTINES_EXTRA_FLAGS "/await")
+  if (_CXX_COROUTINES_SUPPORTS_MS_HEAPELIDE_FLAG AND CMAKE_SIZEOF_VOID_P GREATER_EQUAL 8)
+    list(APPEND CXX_COROUTINES_EXTRA_FLAGS "/await:heapelide")
+  endif ()
+elseif (_CXX_COROUTINES_SUPPORTS_TS_FLAG)
+  set(CXX_COROUTINES_EXTRA_FLAGS "-fcoroutines-ts")
+elseif (_CXX_COROUTINES_SUPPORTS_CORO_FLAG)
+  set(CXX_COROUTINES_EXTRA_FLAGS "-fcoroutines")
+endif ()
 
 # Normalize and check the component list we were given
-set(want_components ${Coroutines_FIND_COMPONENTS})
-if(Coroutines_FIND_COMPONENTS STREQUAL "")
-    set(want_components Final)
-endif()
+set(REQUIRED_COMPONENTS ${Coroutines_FIND_COMPONENTS})
+if (Coroutines_FIND_COMPONENTS STREQUAL "")
+  set(REQUIRED_COMPONENTS Final)
+endif ()
 
 # Warn on any unrecognized components
-set(extra_components ${want_components})
-list(REMOVE_ITEM extra_components Final Experimental)
-foreach(component IN LISTS extra_components)
-    message(WARNING "Extraneous find_package component for Coroutines: ${component}")
-endforeach()
+set(EXTRA_COMPONENTS ${REQUIRED_COMPONENTS})
+list(REMOVE_ITEM EXTRA_COMPONENTS Final Experimental)
+foreach (component IN LISTS EXTRA_COMPONENTS)
+  message(WARNING "Extraneous find_package component for Coroutines: ${component}")
+endforeach ()
 
 # Detect which of Experimental and Final we should look for
-set(find_experimental TRUE)
-set(find_final TRUE)
-if(NOT "Final" IN_LIST want_components)
-    set(find_final FALSE)
-endif()
-if(NOT "Experimental" IN_LIST want_components)
-    set(find_experimental FALSE)
-endif()
+set(FOUND_EXPERIMENTAL TRUE)
+set(FOUND_FINAL TRUE)
+if (NOT "Final" IN_LIST REQUIRED_COMPONENTS)
+  set(FOUND_FINAL FALSE)
+endif ()
+if (NOT "Experimental" IN_LIST REQUIRED_COMPONENTS)
+  set(FOUND_EXPERIMENTAL FALSE)
+endif ()
 
-if(find_final)
-    check_include_file_cxx("coroutine" _CXX_COROUTINES_HAVE_HEADER)
-    if(_CXX_COROUTINES_HAVE_HEADER)
-        check_cxx_source_compiles("#include <coroutine> \n typedef std::suspend_never blub; \nint main() {} " _CXX_COROUTINES_FINAL_HEADER_COMPILES)
-        set(_CXX_COROUTINES_HAVE_HEADER "${_CXX_COROUTINES_FINAL_HEADER_COMPILES}")
-    endif()
+if (FOUND_FINAL)
+  check_include_file_cxx("coroutine" CXX_COROUTINES_HAVE_HEADER)
+  if (CXX_COROUTINES_HAVE_HEADER)
+    check_cxx_source_compiles(
+      "#include <coroutine> \n typedef std::suspend_never blub; \nint main() {} "
+      _CXX_COROUTINES_FINAL_HEADER_COMPILES
+    )
+    set(CXX_COROUTINES_HAVE_HEADER "${_CXX_COROUTINES_FINAL_HEADER_COMPILES}")
+  endif ()
 
-    if(NOT _CXX_COROUTINES_HAVE_HEADER)
-        cmake_push_check_state()
-        set(CMAKE_REQUIRED_FLAGS "${_CXX_COROUTINES_EXTRA_FLAGS}")
-        check_include_file_cxx("coroutine" _CXX_COROUTINES_HAVE_HEADER_WITH_FLAG)
-        if(_CXX_COROUTINES_HAVE_HEADER_WITH_FLAG)
-            check_cxx_source_compiles("#include <coroutine> \n typedef std::suspend_never blub; \nint main() {} " _CXX_COROUTINES_FINAL_HEADER_COMPILES_WITH_FLAG)
-            set(_CXX_COROUTINES_HAVE_HEADER_WITH_FLAG "${_CXX_COROUTINES_FINAL_HEADER_COMPILES_WITH_FLAG}")
-        endif()
-        set(_CXX_COROUTINES_HAVE_HEADER "${_CXX_COROUTINES_HAVE_HEADER_WITH_FLAG}")
-        cmake_pop_check_state()
-    endif()
-    mark_as_advanced(_CXX_COROUTINES_HAVE_HEADER)
-    if(_CXX_COROUTINES_HAVE_HEADER)
-        # We found the non-experimental header. Don't bother looking for the
-        # experimental one.
-        set(find_experimental FALSE)
-    endif()
-else()
-    set(_CXX_COROUTINES_HAVE_HEADER FALSE)
-endif()
+  if (NOT CXX_COROUTINES_HAVE_HEADER)
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_FLAGS "${CXX_COROUTINES_EXTRA_FLAGS}")
+    check_include_file_cxx("coroutine" CXX_COROUTINES_HAVE_HEADER_WITH_FLAG)
+    if (CXX_COROUTINES_HAVE_HEADER_WITH_FLAG)
+      check_cxx_source_compiles(
+        "#include <coroutine> \n typedef std::suspend_never blub; \nint main() {} "
+        _CXX_COROUTINES_FINAL_HEADER_COMPILES_WITH_FLAG
+      )
+      set(CXX_COROUTINES_HAVE_HEADER_WITH_FLAG
+          "${_CXX_COROUTINES_FINAL_HEADER_COMPILES_WITH_FLAG}"
+      )
+    endif ()
+    set(CXX_COROUTINES_HAVE_HEADER "${CXX_COROUTINES_HAVE_HEADER_WITH_FLAG}")
+    cmake_pop_check_state()
+  endif ()
+  mark_as_advanced(CXX_COROUTINES_HAVE_HEADER)
+  if (CXX_COROUTINES_HAVE_HEADER)
+    # We found the non-experimental header. Don't bother looking for the experimental one.
+    set(FOUND_EXPERIMENTAL FALSE)
+  endif ()
+else ()
+  set(CXX_COROUTINES_HAVE_HEADER FALSE)
+endif ()
 
-if(find_experimental)
-    check_include_file_cxx("experimental/coroutine" _CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
-    if(NOT _CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
-        cmake_push_check_state()
-        set(CMAKE_REQUIRED_FLAGS "${_CXX_COROUTINES_EXTRA_FLAGS}")
-        check_include_file_cxx("experimental/coroutine" _CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER_WITH_FLAG)
-        set(_CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER "${_CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER_WITH_FLAG}")
-        cmake_pop_check_state()
-    endif()
-    mark_as_advanced(_CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
-else()
-    set(_CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER FALSE)
-endif()
+if (FOUND_EXPERIMENTAL)
+  check_include_file_cxx("experimental/coroutine" CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
+  if (NOT CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_FLAGS "${CXX_COROUTINES_EXTRA_FLAGS}")
+    check_include_file_cxx(
+      "experimental/coroutine" CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER_WITH_FLAG
+    )
+    set(CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER
+        "${CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER_WITH_FLAG}"
+    )
+    cmake_pop_check_state()
+  endif ()
+  mark_as_advanced(CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
+else ()
+  set(CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER FALSE)
+endif ()
 
-if(_CXX_COROUTINES_HAVE_HEADER)
-    set(_have_coro TRUE)
-    set(_coro_header coroutine)
-    set(_coro_namespace std)
-elseif(_CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
-    set(_have_coro TRUE)
-    set(_coro_header experimental/coroutine)
-    set(_coro_namespace std::experimental)
-else()
-    set(_have_coro FALSE)
-endif()
+if (CXX_COROUTINES_HAVE_HEADER)
+  set(_have_coro TRUE)
+  set(_coro_header coroutine)
+  set(_coro_namespace std)
+elseif (CXX_COROUTINES_HAVE_EXPERIMENTAL_HEADER)
+  set(_have_coro TRUE)
+  set(_coro_header experimental/coroutine)
+  set(_coro_namespace std::experimental)
+else ()
+  set(_have_coro FALSE)
+endif ()
 
-set(CXX_COROUTINES_HAVE_COROUTINES ${_have_coro} CACHE BOOL "TRUE if we have the C++ coroutines feature")
-set(CXX_COROUTINES_HEADER ${_coro_header} CACHE STRING "The header that should be included to obtain the coroutines APIs")
-set(CXX_COROUTINES_NAMESPACE ${_coro_namespace} CACHE STRING "The C++ namespace that contains the coroutines APIs")
+set(CXX_COROUTINES_HAVE_COROUTINES
+    ${_have_coro}
+    CACHE BOOL "TRUE if we have the C++ coroutines feature"
+)
+set(CXX_COROUTINES_HEADER
+    ${_coro_header}
+    CACHE STRING "The header that should be included to obtain the coroutines APIs"
+)
+set(CXX_COROUTINES_NAMESPACE
+    ${_coro_namespace}
+    CACHE STRING "The C++ namespace that contains the coroutines APIs"
+)
 
 set(_found FALSE)
 
-if(CXX_COROUTINES_HAVE_COROUTINES)
-    # We have some coroutines library available. Do link checks
-    string(CONFIGURE [[
+if (CXX_COROUTINES_HAVE_COROUTINES)
+  # We have some coroutines library available. Do link checks
+  string(
+    CONFIGURE
+      [[
         #include <utility>
         #include <@CXX_COROUTINES_HEADER@>
 
@@ -231,52 +255,61 @@ if(CXX_COROUTINES_HAVE_COROUTINES)
           int await_resume() const { return coro_.promise().result; }
         private:
           present(promise_type& promise)
-            : coro_(@CXX_COROUTINES_NAMESPACE@::coroutine_handle<promise_type>::from_promise(promise)) {}
+            : coro_(
+                @CXX_COROUTINES_NAMESPACE@::coroutine_handle<promise_type>::from_promise(promise)
+            ) {}
           @CXX_COROUTINES_NAMESPACE@::coroutine_handle<promise_type> coro_;
         };
-        
         present f(int n) {
           if (n < 2)
             co_return 1;
           else
             co_return n * co_await f(n - 1);
         }
-        
+
         int main() {
           return f(5).await_resume() != 120;
         }
-    ]] code @ONLY)
+    ]]
+      code
+    @ONLY
+  )
 
-    # Try to compile a simple coroutines program without any compiler flags
-    check_cxx_source_compiles("${code}" CXX_COROUTINES_NO_AWAIT_NEEDED)
+  # Try to compile a simple coroutines program without any compiler flags
+  check_cxx_source_compiles("${code}" CXX_COROUTINES_NO_AWAIT_NEEDED)
 
-    set(can_link ${CXX_COROUTINES_NO_AWAIT_NEEDED})
+  set(COROUTINES_CAN_LINK ${CXX_COROUTINES_NO_AWAIT_NEEDED})
 
-    if(NOT CXX_COROUTINES_NO_AWAIT_NEEDED)
-        # Add the -fcoroutines-ts (or /await) flag
-        set(CMAKE_REQUIRED_FLAGS "${_CXX_COROUTINES_EXTRA_FLAGS}")
-        check_cxx_source_compiles("${code}" CXX_COROUTINES_AWAIT_NEEDED)
-        set(can_link "${CXX_COROUTINES_AWAIT_NEEDED}")
-    endif()
+  if (NOT CXX_COROUTINES_NO_AWAIT_NEEDED)
+    # Add the -fcoroutines-ts (or /await) flag
+    set(CMAKE_REQUIRED_FLAGS "${CXX_COROUTINES_EXTRA_FLAGS}")
+    check_cxx_source_compiles("${code}" CXX_COROUTINES_AWAIT_NEEDED)
+    set(COROUTINES_CAN_LINK "${CXX_COROUTINES_AWAIT_NEEDED}")
+  endif ()
 
-    if(can_link)
-        add_library(std::coroutines INTERFACE IMPORTED)
-        set(_found TRUE)
+  if (COROUTINES_CAN_LINK)
+    add_library(std::coroutines INTERFACE IMPORTED)
+    set(_found TRUE)
 
-        if(CXX_COROUTINES_NO_AWAIT_NEEDED)
-            # Nothing to add...
-        elseif(CXX_COROUTINES_AWAIT_NEEDED)
-            target_compile_options(std::coroutines INTERFACE ${_CXX_COROUTINES_EXTRA_FLAGS})
-        endif()
-    else()
-        set(CXX_COROUTINES_HAVE_COROUTINES FALSE)
-    endif()
-endif()
+    if (CXX_COROUTINES_NO_AWAIT_NEEDED)
+      # Nothing to add...
+    elseif (CXX_COROUTINES_AWAIT_NEEDED)
+      target_compile_options(std::coroutines INTERFACE ${CXX_COROUTINES_EXTRA_FLAGS})
+    endif ()
+  else ()
+    set(CXX_COROUTINES_HAVE_COROUTINES FALSE)
+  endif ()
+endif ()
 
 cmake_pop_check_state()
 
-set(Coroutines_FOUND ${_found} CACHE BOOL "TRUE if we can compile and link a program using std::coroutines" FORCE)
+set(COROUTINES_FOUND
+    ${_found}
+    CACHE BOOL "TRUE if we can compile and link a program using std::coroutines" FORCE
+)
 
-if(Coroutines_FIND_REQUIRED AND NOT Coroutines_FOUND)
-    message(FATAL_ERROR "Cannot compile simple program using std::coroutines. Is C++17 or later activated?")
-endif()
+if (Coroutines_FIND_REQUIRED AND NOT COROUTINES_FOUND)
+  message(
+    FATAL_ERROR "Cannot compile simple program using std::coroutines."
+  )
+endif ()

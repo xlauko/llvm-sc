@@ -1,4 +1,6 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+
+#ifdef SC_ENABLE_RANGES
 
 #include <sc/builder.hpp>
 #include <sc/constant.hpp>
@@ -8,6 +10,8 @@
 #include <algorithm>
 
 #include <utils.hpp>
+
+#include <range/v3/algorithm/all_of.hpp>
 
 TEST_CASE( "is", "[closures]" )
 {
@@ -46,7 +50,7 @@ TEST_CASE( "cast", "[closures]" )
             | sc::action::create_function{ "dummy", sc::void_t(), {} }
             | sc::action::create_block{ "entry" };
 
-    auto add = bld
+    auto add = std::move(bld)
             | sc::action::alloc( sc::i8(), "a" )
             | sc::action::alloc( sc::i8(), "b" )
             | sc::action::load( "b" )
@@ -78,7 +82,7 @@ TEST_CASE( "llvm views", "[ranges]" )
     auto ebb = bld.block( "else" );
 
     /* entry block */
-    bld = bld
+    bld = std::move(bld)
           | sc::action::set_block{ "entry" }
           | sc::action::alloc( sc::i8(), "a" )
           | sc::action::alloc( sc::i8(), "b" )
@@ -88,13 +92,13 @@ TEST_CASE( "llvm views", "[ranges]" )
           | sc::action::condbr( {}, tbb, ebb );
 
     /* then block */
-    bld = bld
+    bld = std::move(bld)
           | sc::action::set_block{ "then" }
           | sc::action::load( "a" )
           | sc::action::add{ {}, 5_i8 };
 
     /* else block */
-    bld = bld
+    bld = std::move(bld)
           | sc::action::set_block{ "else" }
           | sc::action::load( "b" )
           | sc::action::sub{ {}, 5_i8 }
@@ -123,7 +127,7 @@ TEST_CASE( "llvm views", "[ranges]" )
 
         using load = llvm::LoadInst;
         auto loads = insts | sc::views::mapdyncast< load >
-                           | std::views::filter( sc::views::notnull );
+                           | ranges::views::filter( sc::views::notnull );
 
         REQUIRE( ranges::distance( loads ) == 4 );
 
@@ -135,3 +139,5 @@ TEST_CASE( "llvm views", "[ranges]" )
         REQUIRE( ranges::distance( sc::views::filter< bin >( *m ) ) == 3 );
     }
 }
+
+#endif

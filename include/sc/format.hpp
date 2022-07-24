@@ -29,8 +29,9 @@
 #include <type_traits>
 #include <experimental/iterator>
 
-#include <range/v3/range_fwd.hpp>
-#include <range/v3/view/transform.hpp>
+#include <sc/concepts.hpp>
+#include <sc/query.hpp>
+#include <sc/warnings.hpp>
 
 namespace sc::fmt
 {
@@ -120,12 +121,14 @@ namespace sc::fmt
         return buffer;
     }
 
-    inline std::string llvm_to_string( const ranges::range auto &vals, std::string_view separator = ", " )
+
+    inline std::string llvm_to_string( const sc::range auto &vals, std::string_view separator = ", " )
     {
         auto to_llvm = [] (const auto &value) { return llvm_to_string(value); };
 
         std::stringstream ss;
-        auto strs = ranges::views::transform(vals, to_llvm);
+        auto strs = sc::query::query( vals ).map( to_llvm );
+
         std::copy(strs.begin(), strs.end(), std::experimental::make_ostream_joiner(ss, separator));
         return ss.str();
     }

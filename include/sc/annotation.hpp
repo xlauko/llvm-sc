@@ -47,9 +47,9 @@ namespace sc
         {
             size_t oldoff = 0, off = 0;
             do {
-                off = anno.find( '.', oldoff );
-                _parts.emplace_back( anno.substr( oldoff, off - oldoff ) );
-                oldoff = off + 1;
+                    off = anno.find( '.', oldoff );
+                    _parts.emplace_back( anno.substr( oldoff, off - oldoff ) );
+                    oldoff = off + 1;
             } while ( off != std::string::npos );
         }
 
@@ -70,15 +70,14 @@ namespace sc
         parts_t _parts;
 
         template< typename Value >
-        static generator< annotated< Value > > enumerate( llvm::Module &m );
+        static sc::generator< annotated< Value > > enumerate( llvm::Module &m );
 
         template< typename Value >
-        static generator< annotated< Value > > enumerate_in_namespace( annotation ns,
+        static sc::generator< annotated< Value > > enumerate_in_namespace( annotation ns,
                                                                        llvm::Module &m );
 
         template< typename ostream >
-        friend auto operator<<( ostream &o, const annotation &ann )
-            -> decltype( o << "" )
+        friend auto operator<<( ostream &o, const annotation &ann ) -> decltype( o << "" )
         {
             return o << ann.str();
         }

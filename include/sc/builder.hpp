@@ -333,7 +333,7 @@ namespace sc
             return phi;
         }
 
-        auto condbr( value c, basicblock t, basicblock f ) { 
+        auto condbr( value c, basicblock t, basicblock f ) {
             return CreateCondBr( c, t, f ); }
         auto br( basicblock dst ) { return CreateBr(dst); }
 
@@ -350,7 +350,12 @@ namespace sc
             return alloc( a.ty );
         }
 
-        auto create( build::load l ) { return load( l.ty, l.ptr ); }
+        auto create( build::load l )
+        {
+            assert( l.ty.has_value() );
+            return load( l.ty.value(), l.ptr );
+        }
+
 
         template< binop op >
         auto create( build::bin< op > a ) { return bin< op >( a.lhs, a.rhs ); }
@@ -583,7 +588,7 @@ namespace sc
         basicblock block( const std::string &name )
         {
             assert( blocks.count(name) );
-            return blocks[name];   
+            return blocks[name];
         }
 
         std::string current_block_name()
@@ -607,18 +612,17 @@ namespace sc
 
     namespace detail
     {
-        template< typename Builder, typename Action >
-        auto make_stack_builder( Builder &&builder, Action &&action )
+        template< typename Action >
+        auto make_stack_builder( stack_builder &&builder, Action &&action )
         {
             return std::move( builder ).apply( action );
         }
     } // namespace detail
 
-    template< typename Builder, typename Action >
-    auto operator|( Builder &&builder, Action &&action )
+    template< typename Action >
+    auto operator|( stack_builder &&builder, Action &&action )
     {
-        return detail::make_stack_builder( std::forward< Builder >( builder ),
-                                           std::forward< Action >( action ) );
+        return detail::make_stack_builder( std::move(builder), std::forward< Action >( action ) );
     }
 
 } // namespace sc
