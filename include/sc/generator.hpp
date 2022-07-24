@@ -62,18 +62,12 @@ namespace sc
             std::exception_ptr _exception;
         };
 
-        template< typename T >
-        using promise_type = detail::generator_promise_type< T >;
-
-        template< typename T >
-        using coroutine_handle = sc::coroutine_handle< promise_type< T > >;
-
         struct generator_sentinel {};
 
         template< typename T >
         struct generator_iterator {
-            using coroutine_handle = coroutine_handle< T >;
-            using promise_type     = promise_type< T >;
+            using promise_type     = detail::generator_promise_type< T >;
+            using coroutine_handle = sc::coroutine_handle<promise_type >;
 
             using iterator_category = std::input_iterator_tag;
             using difference_type   = std::ptrdiff_t;
