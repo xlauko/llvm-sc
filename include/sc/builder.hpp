@@ -48,10 +48,6 @@ namespace sc
 
     namespace build
     {
-        namespace detail
-        {
-        } // namespace detail
-
         struct alloc
         {
             explicit alloc( type t ) : ty( t ) {}
@@ -334,7 +330,9 @@ namespace sc
         }
 
         auto condbr( value c, basicblock t, basicblock f ) {
-            return CreateCondBr( c, t, f ); }
+            return CreateCondBr( c, t, f );
+        }
+
         auto br( basicblock dst ) { return CreateBr(dst); }
 
         auto call( function fn, const values &args ) { return CreateCall( fn, args ); }
@@ -386,6 +384,10 @@ namespace sc
     {
         stack_builder()
             : builder( std::make_unique< builder_t >() )
+        {}
+
+        explicit stack_builder( sc::instruction *inst )
+            : builder( std::make_unique< builder_t >(inst) )
         {}
 
         stack_builder( stack_builder&& ) = default;
