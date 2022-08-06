@@ -63,6 +63,12 @@ namespace sc
             value ptr;
         };
 
+        struct store
+        {
+            value val;
+            value ptr;
+        };
+
         template< binop op >
         struct bin { value lhs, rhs; };
 
@@ -125,6 +131,11 @@ namespace sc
 
             type ty;
             std::string from_var;
+        };
+
+        struct store
+        {
+            std::optional< value > val, dst;
         };
 
         template< binop op >
@@ -264,6 +275,8 @@ namespace sc
 
         struct module { llvm::Module * module; };
 
+        struct keep_stack {};
+
     } // namespace action
 
     struct builder_t : llvm::IRBuilder<>
@@ -288,6 +301,8 @@ namespace sc
         }
 
         auto load( type ty, value ptr ) { return CreateLoad( ty, ptr ); }
+
+        auto store( value val, value ptr ) { return CreateStore( val, ptr ); }
 
         template< binop op >
         auto bin( value l, value r ) { return CreateBinOp( op, l, r ); }
@@ -354,6 +369,7 @@ namespace sc
             return load( l.ty, l.ptr );
         }
 
+        auto create( build::store s ) { return store( s.val, s.ptr ); }
 
         template< binop op >
         auto create( build::bin< op > a ) { return bin< op >( a.lhs, a.rhs ); }
@@ -410,26 +426,40 @@ namespace sc
             return v;
         }
 
+        value back()
+        {
+            assert( !stack.empty() );
+            return stack.back();
+        }
+
         value popvalue( std::optional< value > v )
         {
-            return v.has_value() ? v.value() : pop();
+            return v.has_value() ? v.value() : (keep_stack ? back() : pop());
         }
 
         auto apply( action::alloc a ) &&
         {
             value var = builder->create( a );
 
-            if ( a.name.has_value() )
+            if ( a.name.has_value() ) {
                 vars[ a.name.value() ] = var;
-            else
-                push( var );
+            }
 
+            push( var );
             return std::move( *this );
         }
 
         auto apply( action::load l ) &&
         {
             push( builder->create( build::load{ l.ty, vars.at( l.from_var ) } ) );
+            return std::move(*this);
+        }
+
+        auto apply( action::store s ) &&
+        {
+            value v = popvalue( s.val );
+            value d = popvalue( s.dst );
+            builder->create( build::store{ v, d } );
             return std::move(*this);
         }
 
@@ -579,7 +609,13 @@ namespace sc
             return std::move( *this );
         }
 
-        value apply( action::last ) { return pop(); }
+        value apply( action::last ) { return back(); }
+
+        auto apply( action::keep_stack ) &&
+        {
+            keep_stack = true;
+            return std::move( *this );
+        }
 
         auto apply( action::inspect ins ) &&
         {
@@ -609,6 +645,7 @@ namespace sc
         sc::adt::bimap< std::string, basicblock > blocks;
         basicblock current_block;
 
+        bool keep_stack = false;
         std::vector< value > stack;
     };
 
