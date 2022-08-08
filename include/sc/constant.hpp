@@ -25,6 +25,8 @@ namespace sc
     using constant = llvm::Constant;
     using constant_int = llvm::ConstantInt;
 
+    using undef_type = llvm::UndefValue;
+
     constant_int* i1 ( bool );
     constant_int* i8 ( uint8_t );
     constant_int* i16( uint16_t );
@@ -44,6 +46,8 @@ namespace sc
     using apint = llvm::APInt;
 
     const apint& get_value( constant_int * c );
+
+    value undef( type ty );
 
     namespace literals
     {

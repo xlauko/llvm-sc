@@ -133,6 +133,14 @@ namespace sc
             std::string from_var;
         };
 
+        struct load_ptr
+        {
+            load_ptr( type t, value f ) : ty( t ), from( f ) {}
+
+            type ty;
+            std::optional< value > from;
+        };
+
         struct store
         {
             std::optional< value > val, dst;
@@ -276,6 +284,10 @@ namespace sc
         struct module { llvm::Module * module; };
 
         struct keep_stack {};
+
+        struct push { value val; };
+
+        struct pop { unsigned n = 1; };
 
     } // namespace action
 
@@ -455,6 +467,12 @@ namespace sc
             return std::move(*this);
         }
 
+        auto apply( action::load_ptr l ) &&
+        {
+            push( builder->create( build::load{ l.ty, popvalue( l.from ) } ) );
+            return std::move(*this);
+        }
+
         auto apply( action::store s ) &&
         {
             value v = popvalue( s.val );
@@ -614,6 +632,19 @@ namespace sc
         auto apply( action::keep_stack ) &&
         {
             keep_stack = true;
+            return std::move( *this );
+        }
+
+        auto apply( action::push p ) &&
+        {
+            push( p.val );
+            return std::move( *this );
+        }
+
+        auto apply( action::pop p ) &&
+        {
+            for (unsigned i = 0; i < p.n; i++)
+                pop();
             return std::move( *this );
         }
 
