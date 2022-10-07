@@ -23,6 +23,7 @@
 
 #include <span>
 #include <vector>
+#include <optional>
 #include <algorithm>
 
 namespace sc
